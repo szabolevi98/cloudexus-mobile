@@ -51,7 +51,8 @@ import java.net.URI
 fun HomeScreen(session: Session, onBooking: (BookingMode) -> Unit, onLookup: () -> Unit, onSettings: () -> Unit) {
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         CxHeader(
-            title = stringResource(R.string.home_greeting, session.user.fullName.substringBefore(' ').ifBlank { session.user.fullName }),
+            // The whole name: in Hungarian order the first word is the family name.
+            title = stringResource(R.string.home_greeting, session.user.fullName),
             subtitle = host(session.baseUrl),
             actions = {
                 IconButton(onClick = onSettings) {

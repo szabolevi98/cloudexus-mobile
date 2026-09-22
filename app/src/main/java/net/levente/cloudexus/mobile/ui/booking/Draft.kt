@@ -61,6 +61,20 @@ data class Draft(val lines: List<DraftLine> = emptyList()) {
 
     fun remove(key: String): Draft = Draft(lines.filterNot { it.key == key })
 
+    /**
+     * A transfer's target shelf belongs to the whole delivery, and is usually
+     * chosen after the items are scanned, so it moves every line; lines that
+     * end up identical are merged. (The source shelf stays per line: it is
+     * where each item was picked from.)
+     */
+    fun withTarget(to: Location?): Draft {
+        val merged = LinkedHashMap<String, DraftLine>()
+        for (line in lines.map { it.copy(to = to) }) {
+            merged[line.key] = merged[line.key]?.let { it.copy(quantity = it.quantity + line.quantity) } ?: line
+        }
+        return Draft(merged.values.toList())
+    }
+
     /** Everything drafted of one product, over all locations. */
     fun totalFor(productId: Int): BigDecimal =
         lines.filter { it.productId == productId }.fold(BigDecimal.ZERO) { sum, line -> sum + line.quantity }

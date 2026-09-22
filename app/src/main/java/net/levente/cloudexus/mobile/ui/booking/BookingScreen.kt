@@ -59,7 +59,14 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -307,6 +314,7 @@ private fun ScanStep(state: BookingUiState, viewModel: BookingViewModel, scanner
 
     pickLocation?.let { target ->
         LocationPicker(
+            hint = stringResource(if (target) R.string.pick_target_location_hint else R.string.pick_location_hint),
             locations = if (target) state.toLocations else state.locations,
             selected = if (target) state.toLocation else state.location,
             onPick = { location ->
@@ -552,20 +560,27 @@ private fun ErrorPanel(error: UiText, onRetry: () -> Unit) {
 
 @Composable
 private fun QuantityDialog(line: DraftLine, onConfirm: (BigDecimal) -> Unit, onDismiss: () -> Unit) {
-    var text by rememberSaveable { mutableStateOf(line.quantity.toPlainString()) }
-    val parsed = parseQuantity(text)
+    // Opens with the current amount selected, so typing replaces it.
+    // Plain digits: a grouped "1,000" would read back as a decimal comma.
+    val initial = line.quantity.stripTrailingZeros().toPlainString()
+    var value by remember { mutableStateOf(TextFieldValue(initial, TextRange(0, initial.length))) }
+    val parsed = parseQuantity(value.text)
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(line.name, maxLines = 2, overflow = TextOverflow.Ellipsis) },
         text = {
             OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
+                value = value,
+                onValueChange = { value = it },
                 label = { Text(stringResource(R.string.quantity_label, line.unit.orEmpty())) },
                 isError = parsed == null,
                 supportingText = { if (parsed == null) Text(stringResource(R.string.quantity_invalid)) },
                 singleLine = true,
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { parsed?.let(onConfirm) }),
+                modifier = Modifier.focusRequester(focus),
             )
         },
         confirmButton = { TextButton(onClick = { parsed?.let(onConfirm) }, enabled = parsed != null) { Text(stringResource(R.string.ok)) } },
@@ -593,7 +608,7 @@ private fun NoteDialog(note: String, onConfirm: (String) -> Unit, onDismiss: () 
 }
 
 @Composable
-private fun LocationPicker(locations: List<Location>, selected: Location?, onPick: (Location?) -> Unit, onDismiss: () -> Unit) {
+private fun LocationPicker(hint: String, locations: List<Location>, selected: Location?, onPick: (Location?) -> Unit, onDismiss: () -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
     val filtered = locations.filter {
         query.isBlank() || it.code.contains(query.trim(), ignoreCase = true) || it.name.orEmpty().contains(query.trim(), ignoreCase = true)
@@ -603,7 +618,7 @@ private fun LocationPicker(locations: List<Location>, selected: Location?, onPic
         title = { Text(stringResource(R.string.pick_location)) },
         text = {
             Column {
-                Text(stringResource(R.string.pick_location_hint), style = MaterialTheme.typography.bodyMedium, color = CxMuted)
+                Text(hint, style = MaterialTheme.typography.bodyMedium, color = CxMuted)
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = query,

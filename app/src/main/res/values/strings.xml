@@ -58,11 +58,14 @@
 
     <!-- Beolvasás -->
     <string name="scan_placeholder">Vonalkód vagy cikkszám</string>
+    <string name="scan_ready">Olvass be egy vonalkódot…</string>
+    <string name="scan_tap_to_focus">Koppints ide a beolvasáshoz</string>
     <string name="scan_type_manually">Kézi beírás</string>
     <string name="scan_with_camera">Beolvasás kamerával</string>
     <string name="no_location">Polc nélkül</string>
     <string name="pick_location">Polc kiválasztása</string>
     <string name="pick_location_hint">A polc címkéjét be is olvashatod, akkor ez magától átáll.</string>
+    <string name="pick_target_location_hint">A beolvasott polccímke a forráshoz kerül. A célpolcot itt válaszd ki: minden tételre érvényes.</string>
     <string name="location_set">Polc: %1$s</string>
     <string name="target_location_set">Célpolc: %1$s</string>
     <string name="location_set_hint">A következő tételek ide kerülnek.</string>
@@ -90,6 +93,8 @@
     <string name="submit_out">Kiadás rögzítése</string>
     <string name="submit_transfer">Átadás rögzítése</string>
     <string name="booking_uncertain">Nem jött válasz a szervertől, ezért lehet, hogy a rögzítés már megtörtént. Az újraküldés biztonságos: kétszer semmiképp nem könyvel.</string>
+    <string name="booking_rejected_short">Nincs elég készlet %1$d terméknél, ezért semmi sem lett rögzítve. Javítsd a pirossal jelölt tételeket.</string>
+    <string name="booking_rejected_lines">%1$d tétel hibás, ezért semmi sem lett rögzítve. Javítsd a pirossal jelölt tételeket.</string>
     <string name="booking_short_line">Nincs elég készlet: %1$s van, %2$s kellene.</string>
     <string name="retry_submit">Újraküldés</string>
     <string name="edit_anyway">Mégis szerkesztem (lehet, hogy már rögzült)</string>

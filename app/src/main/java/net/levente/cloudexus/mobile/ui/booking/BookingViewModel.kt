@@ -154,7 +154,9 @@ class BookingViewModel(
     }
 
     fun setTargetLocation(location: Location?) {
-        _state.update { it.copy(toLocation = location) }
+        if (state.value.uncertain) return
+        idempotencyKey = null
+        _state.update { it.copy(toLocation = location, draft = it.draft.withTarget(location), lineErrors = emptyMap()) }
     }
 
     fun setNote(note: String) {
@@ -178,7 +180,8 @@ class BookingViewModel(
         }
         if (current.mode == BookingMode.TRANSFER) {
             current.toLocations.firstOrNull { it.code.equals(code, ignoreCase = true) }?.let { location ->
-                _state.update { it.copy(toLocation = location, feedback = ScanFeedback.LocationChanged(location, target = true)) }
+                setTargetLocation(location)
+                _state.update { it.copy(feedback = ScanFeedback.LocationChanged(location, target = true)) }
                 _events.trySend(BookingEvent.Scanned(true))
                 return
             }
@@ -263,7 +266,14 @@ class BookingViewModel(
                 _state.update { it.copy(submitting = false, uncertain = true, submitError = UiText.Res(R.string.booking_uncertain)) }
             } catch (e: ApiException.Http) {
                 idempotencyKey = null
-                _state.update { it.copy(submitting = false, uncertain = false, submitError = e.toUiText(), lineErrors = lineErrors(e, it.draft)) }
+                val shortages = e.shortages().size
+                val problems = e.lineProblems().size
+                val message = when {
+                    shortages > 0 -> UiText.Res(R.string.booking_rejected_short, listOf(shortages))
+                    problems > 0 -> UiText.Res(R.string.booking_rejected_lines, listOf(problems))
+                    else -> e.toUiText()
+                }
+                _state.update { it.copy(submitting = false, uncertain = false, submitError = message, lineErrors = lineErrors(e, it.draft)) }
             } catch (e: ApiException) {
                 handle(e)
                 _state.update { it.copy(submitting = false, submitError = e.toUiText()) }

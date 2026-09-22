@@ -18,6 +18,9 @@ private val colors = lightColorScheme(
     onPrimaryContainer = CxPrimaryDark,
     secondary = CxNavyTo,
     onSecondary = CxSurface,
+    // Tonal buttons (the quantity stepper) use the web's soft indigo, not Material's default lavender.
+    secondaryContainer = CxPrimarySoft,
+    onSecondaryContainer = CxPrimaryDark,
     background = CxBackground,
     onBackground = CxText,
     surface = CxSurface,

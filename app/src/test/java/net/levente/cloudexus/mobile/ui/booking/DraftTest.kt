@@ -59,6 +59,21 @@ class DraftTest {
     }
 
     @Test
+    fun `a transfer target chosen later applies to every line and merges duplicates`() {
+        val target = Location(id = 101, warehouseId = 3, code = "C-02-01")
+        val draft = Draft()
+            .add(monitor, shelfA, null)
+            .add(monitor, shelfA, target)
+            .add(paper, shelfB, null)
+            .withTarget(target)
+
+        assertEquals(2, draft.lines.size)
+        assertTrue(draft.lines.all { it.to == target })
+        assertEquals(BigDecimal(2), draft.lines.first { it.productId == monitor.id }.quantity)
+        assertEquals(shelfB, draft.lines.first { it.productId == paper.id }.from)
+    }
+
+    @Test
     fun `stock in body names the warehouse and each line's location`() {
         val body = Draft().add(paper, null, null).add(monitor, shelfA, null, BigDecimal("1.5"))
             .requestBody(BookingMode.IN, central, null, "  Szállítólevél 118  ")

@@ -150,7 +150,7 @@ fun SettingsScreen(
             CxCard {
                 Text(stringResource(R.string.settings_test_hint), style = MaterialTheme.typography.bodyMedium, color = CxMuted)
                 Spacer(Modifier.height(12.dp))
-                ScanField(onScan = { lastScan = it }, onCamera = null, busy = false)
+                ScanField(onScan = { lastScan = it }, onCamera = null, busy = false, autoFocus = false)
                 lastScan?.let {
                     Spacer(Modifier.height(12.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {

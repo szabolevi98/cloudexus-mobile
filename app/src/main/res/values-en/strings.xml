@@ -49,11 +49,14 @@
     <string name="change_warehouse">Change warehouse</string>
 
     <string name="scan_placeholder">Barcode or SKU</string>
+    <string name="scan_ready">Scan a barcode…</string>
+    <string name="scan_tap_to_focus">Tap here to scan</string>
     <string name="scan_type_manually">Type manually</string>
     <string name="scan_with_camera">Scan with camera</string>
     <string name="no_location">No location</string>
     <string name="pick_location">Pick a location</string>
     <string name="pick_location_hint">You can also scan the shelf label to switch to it.</string>
+    <string name="pick_target_location_hint">A scanned shelf label goes to the source. Pick the target shelf here: it applies to every item.</string>
     <string name="location_set">Location: %1$s</string>
     <string name="target_location_set">Target location: %1$s</string>
     <string name="location_set_hint">The next items go here.</string>
@@ -79,6 +82,8 @@
     <string name="submit_out">Book stock out</string>
     <string name="submit_transfer">Book transfer</string>
     <string name="booking_uncertain">No answer from the server, so the booking may have gone through already. Sending it again is safe: it will never be booked twice.</string>
+    <string name="booking_rejected_short">Not enough stock for %1$d product(s), so nothing was booked. Fix the items marked in red.</string>
+    <string name="booking_rejected_lines">%1$d item(s) are invalid, so nothing was booked. Fix the items marked in red.</string>
     <string name="booking_short_line">Not enough stock: %1$s available, %2$s needed.</string>
     <string name="retry_submit">Send again</string>
     <string name="edit_anyway">Edit anyway (it may be booked already)</string>
