@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Magyar az alapnyelv, mint a webes Cloudexusban; az angol a values-en alatt van. -->
 <resources>
-    <string name="app_name">Cloudexus</string>
+    <string name="app_name" translatable="false">Cloudexus</string>
 
     <!-- Általános -->
     <string name="back">Vissza</string>

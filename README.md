@@ -128,6 +128,10 @@ ilyen fordítás.
 
 # Unit tesztek (a könyvelési lista logikája és az API-kliens egy mock szerver ellen)
 ./gradlew testDebugUnitTest
+
+# Debug build R8-cal, pontosan úgy minifikálva, mint a release, de a helyi szerverhez.
+# Kiadás előtt ezzel érdemes kipróbálni a kamerát: az ML Kit reflexiója csak minifikálva törik el.
+./gradlew assembleDebug -PminifyDebug
 ```
 
 Aláírt release buildhez a projekt gyökerébe kell egy `keystore.properties` (Git által ignorált):

@@ -22,8 +22,8 @@ android {
         // Sok raktári PDA még Android 8-at futtat.
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
     }
 
     signingConfigs {
@@ -40,6 +40,13 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+            // ./gradlew assembleDebug -PminifyDebug runs R8 exactly like release, against the
+            // local server, so reflection-heavy libraries (ML Kit) can be tried minified before
+            // shipping. A release-only camera crash slipped through once for want of this.
+            if (providers.gradleProperty("minifyDebug").isPresent) {
+                isMinifyEnabled = true
+                proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            }
             // Az emulátorból a gép localhostja 10.0.2.2-n látszik.
             buildConfigField("String", "DEFAULT_SERVER_URL", "\"http://10.0.2.2/cloudexus/web\"")
         }

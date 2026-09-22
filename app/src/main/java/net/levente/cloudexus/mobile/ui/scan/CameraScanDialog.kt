@@ -130,6 +130,7 @@ private fun CameraPreview(onCode: (String) -> Unit, onUnavailable: () -> Unit) {
     DisposableEffect(lifecycleOwner) {
         val providerFuture = ProcessCameraProvider.getInstance(context)
         var provider: ProcessCameraProvider? = null
+        var analysis: ImageAnalysis? = null
         providerFuture.addListener({
             // No back camera (a camera-less PDA, an emulator without one): say so instead of a black screen.
             val cameraProvider = runCatching { providerFuture.get() }.getOrNull()
@@ -139,27 +140,33 @@ private fun CameraPreview(onCode: (String) -> Unit, onUnavailable: () -> Unit) {
             }
             provider = cameraProvider
             val preview = Preview.Builder().build().also { it.surfaceProvider = previewView.surfaceProvider }
-            val analysis = ImageAnalysis.Builder()
+            val imageAnalysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
-            analysis.setAnalyzer(executor) { proxy ->
+                .also { analysis = it }
+            imageAnalysis.setAnalyzer(executor) { proxy ->
                 val media = proxy.image
                 if (media == null || delivered.get()) {
                     proxy.close()
                     return@setAnalyzer
                 }
-                scanner.process(InputImage.fromMediaImage(media, proxy.imageInfo.rotationDegrees))
-                    .addOnSuccessListener { barcodes ->
-                        val value = barcodes.firstNotNullOfOrNull { it.rawValue?.takeIf(String::isNotBlank) }
-                        if (value != null && delivered.compareAndSet(false, true)) {
-                            ContextCompat.getMainExecutor(context).execute { currentOnCode(value) }
+                try {
+                    scanner.process(InputImage.fromMediaImage(media, proxy.imageInfo.rotationDegrees))
+                        .addOnSuccessListener { barcodes ->
+                            val value = barcodes.firstNotNullOfOrNull { it.rawValue?.takeIf(String::isNotBlank) }
+                            if (value != null && delivered.compareAndSet(false, true)) {
+                                ContextCompat.getMainExecutor(context).execute { currentOnCode(value) }
+                            }
                         }
-                    }
-                    .addOnCompleteListener { proxy.close() }
+                        .addOnCompleteListener { proxy.close() }
+                } catch (e: RuntimeException) {
+                    // The scanner was closed while this frame was on its way: drop the frame.
+                    proxy.close()
+                }
             }
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, analysis)
+                cameraProvider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageAnalysis)
             } catch (e: IllegalArgumentException) {
                 onUnavailable()
             } catch (e: IllegalStateException) {
@@ -168,6 +175,9 @@ private fun CameraPreview(onCode: (String) -> Unit, onUnavailable: () -> Unit) {
         }, ContextCompat.getMainExecutor(context))
 
         onDispose {
+            // Stop frames first, then the camera, and only then the thread they run on: a frame
+            // handed to an executor that is already shut down would crash the app.
+            analysis?.clearAnalyzer()
             provider?.unbindAll()
             scanner.close()
             executor.shutdown()
