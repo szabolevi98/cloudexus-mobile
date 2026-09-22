@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
+    <string name="ok">OK</string>
+    <string name="retry">Retry</string>
+    <string name="search">Search</string>
+    <string name="settings">Settings</string>
+
+    <string name="error_network">Can\'t reach the server. Check the wifi or mobile data.</string>
+    <string name="error_session_expired">Your sign-in has expired. Please sign in again.</string>
+    <string name="error_bad_response">The server did not answer like Cloudexus. Check the server address.</string>
+    <string name="error_server">The server reported an error: %1$s</string>
+
+    <string name="login_tagline">Stock in, stock out and transfers, by barcode.</string>
+    <string name="login_title">Sign in</string>
+    <string name="login_server">Server address</string>
+    <string name="login_username">Username or e-mail</string>
+    <string name="login_password">Password</string>
+    <string name="login_show_password">Show password</string>
+    <string name="login_hide_password">Hide password</string>
+    <string name="login_submit">Sign in</string>
+    <string name="login_server_invalid">Invalid server address.</string>
+    <string name="login_fields_required">Enter your username and password.</string>
+    <string name="login_wrong_credentials">Wrong username or password.</string>
+    <string name="login_throttled">Too many failed attempts. Try again in 15 minutes.</string>
+    <string name="login_footer">Cloudexus Mobile %1$s</string>
+
+    <string name="home_greeting">Hi, %1$s!</string>
+    <string name="home_section_movements">Stock movements</string>
+    <string name="home_section_info">Information</string>
+
+    <string name="mode_in">Stock in</string>
+    <string name="mode_in_subtitle">Book incoming goods</string>
+    <string name="mode_out">Stock out</string>
+    <string name="mode_out_subtitle">Issue goods from the warehouse</string>
+    <string name="mode_transfer">Transfer</string>
+    <string name="mode_transfer_subtitle">Move goods between two warehouses</string>
+    <string name="mode_lookup">Stock lookup</string>
+    <string name="mode_lookup_subtitle">How much and where, without booking</string>
+
+    <string name="pick_warehouse">Which warehouse?</string>
+    <string name="pick_source_warehouse">From where? Pick the source warehouse</string>
+    <string name="pick_target_warehouse">To where? Pick the target warehouse</string>
+    <string name="transfer_from">From:</string>
+    <string name="no_warehouses_title">No active warehouse</string>
+    <string name="no_warehouses_text">Warehouses are added under Warehouses in the web app.</string>
+    <string name="change_warehouse">Change warehouse</string>
+
+    <string name="scan_placeholder">Barcode or SKU</string>
+    <string name="scan_type_manually">Type manually</string>
+    <string name="scan_with_camera">Scan with camera</string>
+    <string name="no_location">No location</string>
+    <string name="pick_location">Pick a location</string>
+    <string name="pick_location_hint">You can also scan the shelf label to switch to it.</string>
+    <string name="location_set">Location: %1$s</string>
+    <string name="target_location_set">Target location: %1$s</string>
+    <string name="location_set_hint">The next items go here.</string>
+    <string name="stock_here">Stock here</string>
+    <string name="stock_total">Total stock</string>
+    <string name="stock_short_hint">%1$s is on the list already, but the warehouse holds only %2$s.</string>
+    <string name="code_not_found_title">Unknown code</string>
+    <string name="code_not_found_text">No active product has this barcode or SKU: %1$s</string>
+    <string name="lookup_failed">The lookup failed</string>
+    <string name="empty_draft_title">Scan a product</string>
+    <string name="empty_draft_text">Scanned items collect here. Scanning the same product again adds one.</string>
+
+    <string name="remove_line">Remove item</string>
+    <string name="line_short">The warehouse does not hold this much.</string>
+    <string name="quantity_decrease">Less</string>
+    <string name="quantity_increase">More</string>
+    <string name="quantity_label">Quantity (%1$s)</string>
+    <string name="quantity_invalid">A positive number with at most 3 decimals.</string>
+    <string name="note">Note</string>
+    <string name="note_placeholder">E.g. the delivery note number</string>
+
+    <string name="submit_in">Book stock in</string>
+    <string name="submit_out">Book stock out</string>
+    <string name="submit_transfer">Book transfer</string>
+    <string name="booking_uncertain">No answer from the server, so the booking may have gone through already. Sending it again is safe: it will never be booked twice.</string>
+    <string name="booking_short_line">Not enough stock: %1$s available, %2$s needed.</string>
+    <string name="retry_submit">Send again</string>
+    <string name="edit_anyway">Edit anyway (it may be booked already)</string>
+    <string name="discard_title">Discard the list?</string>
+    <string name="discard_confirm">Discard</string>
+
+    <string name="done_in">Stock in booked</string>
+    <string name="done_out">Stock out booked</string>
+    <string name="done_transfer">Transfer booked</string>
+    <string name="again_in">New stock in</string>
+    <string name="again_out">New stock out</string>
+    <string name="again_transfer">New transfer</string>
+    <string name="back_to_home">Back to the home screen</string>
+
+    <string name="lookup_empty_title">Scan a product</string>
+    <string name="lookup_empty_text">I\'ll show which warehouse and shelf holds how much of it.</string>
+    <string name="lookup_no_stock">There is no stock of this product anywhere right now.</string>
+
+    <string name="camera_hint">Hold the barcode inside the frame.</string>
+    <string name="camera_denied">Camera scanning needs permission to use the camera.</string>
+    <string name="camera_allow">Allow</string>
+
+    <string name="settings_account">Account</string>
+    <string name="sign_out">Sign out</string>
+    <string name="sign_out_confirm">Sign out on this device? You stay signed in on your other devices.</string>
+    <string name="settings_scanner">Barcode scanner</string>
+    <string name="settings_scanner_hint">Keyboard wedge (the PDA types the code and presses Enter) works with every scanner and needs no setup. If the maker sends an intent, pick its type, and scans arrive even when the scan field has no focus.</string>
+    <string name="settings_intent_action">Intent action</string>
+    <string name="settings_intent_extra">Extra key (holds the code)</string>
+    <string name="settings_zebra_hint">In DataWedge, enable the profile\'s Intent output, set its action to %1$s, and set delivery to "Broadcast intent".</string>
+    <string name="settings_test">Test</string>
+    <string name="settings_test_hint">Scan anything here to see whether the code arrives.</string>
+    <string name="settings_test_received">Received: %1$s</string>
+
+    <string name="preset_keyboard">Keyboard wedge only</string>
+    <string name="preset_zebra">Zebra (DataWedge)</string>
+    <string name="preset_honeywell">Honeywell</string>
+    <string name="preset_urovo">Urovo</string>
+    <string name="preset_newland">Newland</string>
+    <string name="preset_sunmi">Sunmi</string>
+    <string name="preset_idata">iData</string>
+    <string name="preset_custom">Custom intent</string>
+
+    <plurals name="lines_count">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
+    <plurals name="lines_short">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
+    <plurals name="discard_text">
+        <item quantity="one">The %1$d scanned item will be lost.</item>
+        <item quantity="other">The %1$d scanned items will be lost.</item>
+    </plurals>
+    <plurals name="done_summary">
+        <item quantity="one">%1$d item · %2$s</item>
+        <item quantity="other">%1$d items · %2$s</item>
+    </plurals>
+</resources>

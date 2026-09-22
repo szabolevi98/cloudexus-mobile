@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Magyar az alapnyelv, mint a webes Cloudexusban; az angol a values-en alatt van. -->
+<resources>
+    <string name="app_name">Cloudexus</string>
+
+    <!-- Általános -->
+    <string name="back">Vissza</string>
+    <string name="cancel">Mégse</string>
+    <string name="close">Bezárás</string>
+    <string name="ok">Rendben</string>
+    <string name="retry">Újra</string>
+    <string name="search">Keresés</string>
+    <string name="settings">Beállítások</string>
+
+    <!-- Hibák -->
+    <string name="error_network">Nem érhető el a szerver. Ellenőrizd a wifit vagy a mobilnetet.</string>
+    <string name="error_session_expired">A bejelentkezésed lejárt. Jelentkezz be újra.</string>
+    <string name="error_bad_response">A szerver nem Cloudexus-választ adott. Ellenőrizd a szervercímet.</string>
+    <string name="error_server">A szerver hibát jelzett: %1$s</string>
+
+    <!-- Bejelentkezés -->
+    <string name="login_tagline">Raktári bevét, kiadás és átadás, vonalkóddal.</string>
+    <string name="login_title">Bejelentkezés</string>
+    <string name="login_server">Szerver címe</string>
+    <string name="login_username">Felhasználónév vagy e-mail</string>
+    <string name="login_password">Jelszó</string>
+    <string name="login_show_password">Jelszó mutatása</string>
+    <string name="login_hide_password">Jelszó elrejtése</string>
+    <string name="login_submit">Bejelentkezés</string>
+    <string name="login_server_invalid">Érvénytelen szervercím.</string>
+    <string name="login_fields_required">Add meg a felhasználóneved és a jelszavad.</string>
+    <string name="login_wrong_credentials">Hibás felhasználónév vagy jelszó.</string>
+    <string name="login_throttled">Túl sok sikertelen próbálkozás. Próbáld újra 15 perc múlva.</string>
+    <string name="login_footer">Cloudexus Mobile %1$s</string>
+
+    <!-- Főmenü -->
+    <string name="home_greeting">Szia, %1$s!</string>
+    <string name="home_section_movements">Raktári mozgások</string>
+    <string name="home_section_info">Információ</string>
+
+    <string name="mode_in">Raktári bevét</string>
+    <string name="mode_in_subtitle">Beérkező áru rögzítése</string>
+    <string name="mode_out">Raktári kiadás</string>
+    <string name="mode_out_subtitle">Áru kiadása a raktárból</string>
+    <string name="mode_transfer">Raktárközi átadás</string>
+    <string name="mode_transfer_subtitle">Áru mozgatása két raktár között</string>
+    <string name="mode_lookup">Készletlekérdezés</string>
+    <string name="mode_lookup_subtitle">Mennyi van és hol, rögzítés nélkül</string>
+
+    <!-- Raktárválasztás -->
+    <string name="pick_warehouse">Melyik raktárban?</string>
+    <string name="pick_source_warehouse">Honnan? Válaszd ki a forrásraktárat</string>
+    <string name="pick_target_warehouse">Hová? Válaszd ki a célraktárat</string>
+    <string name="transfer_from">Forrás:</string>
+    <string name="no_warehouses_title">Nincs aktív raktár</string>
+    <string name="no_warehouses_text">A webes felületen a Raktárak menüben vehetsz fel raktárat.</string>
+    <string name="change_warehouse">Raktár váltása</string>
+
+    <!-- Beolvasás -->
+    <string name="scan_placeholder">Vonalkód vagy cikkszám</string>
+    <string name="scan_type_manually">Kézi beírás</string>
+    <string name="scan_with_camera">Beolvasás kamerával</string>
+    <string name="no_location">Polc nélkül</string>
+    <string name="pick_location">Polc kiválasztása</string>
+    <string name="pick_location_hint">A polc címkéjét be is olvashatod, akkor ez magától átáll.</string>
+    <string name="location_set">Polc: %1$s</string>
+    <string name="target_location_set">Célpolc: %1$s</string>
+    <string name="location_set_hint">A következő tételek ide kerülnek.</string>
+    <string name="stock_here">Készlet itt</string>
+    <string name="stock_total">Összes készlet</string>
+    <string name="stock_short_hint">Már %1$s van a listán, de a raktárban csak %2$s.</string>
+    <string name="code_not_found_title">Ismeretlen kód</string>
+    <string name="code_not_found_text">Nincs aktív termék ezzel a vonalkóddal vagy cikkszámmal: %1$s</string>
+    <string name="lookup_failed">Nem sikerült a keresés</string>
+    <string name="empty_draft_title">Olvass be egy terméket</string>
+    <string name="empty_draft_text">A beolvasott tételek itt gyűlnek. Ugyanaz a termék újra beolvasva eggyel növeli a mennyiséget.</string>
+
+    <!-- Tételek -->
+    <string name="remove_line">Tétel törlése</string>
+    <string name="line_short">Nincs ennyi készlet a raktárban.</string>
+    <string name="quantity_decrease">Kevesebb</string>
+    <string name="quantity_increase">Több</string>
+    <string name="quantity_label">Mennyiség (%1$s)</string>
+    <string name="quantity_invalid">Pozitív szám, legfeljebb 3 tizedesjeggyel.</string>
+    <string name="note">Megjegyzés</string>
+    <string name="note_placeholder">Pl. szállítólevél száma</string>
+
+    <!-- Rögzítés -->
+    <string name="submit_in">Bevét rögzítése</string>
+    <string name="submit_out">Kiadás rögzítése</string>
+    <string name="submit_transfer">Átadás rögzítése</string>
+    <string name="booking_uncertain">Nem jött válasz a szervertől, ezért lehet, hogy a rögzítés már megtörtént. Az újraküldés biztonságos: kétszer semmiképp nem könyvel.</string>
+    <string name="booking_short_line">Nincs elég készlet: %1$s van, %2$s kellene.</string>
+    <string name="retry_submit">Újraküldés</string>
+    <string name="edit_anyway">Mégis szerkesztem (lehet, hogy már rögzült)</string>
+    <string name="discard_title">Elveted a listát?</string>
+    <string name="discard_confirm">Elvetés</string>
+
+    <string name="done_in">Bevét rögzítve</string>
+    <string name="done_out">Kiadás rögzítve</string>
+    <string name="done_transfer">Átadás rögzítve</string>
+    <string name="again_in">Új bevét</string>
+    <string name="again_out">Új kiadás</string>
+    <string name="again_transfer">Új átadás</string>
+    <string name="back_to_home">Vissza a főmenübe</string>
+
+    <!-- Készletlekérdezés -->
+    <string name="lookup_empty_title">Olvass be egy terméket</string>
+    <string name="lookup_empty_text">Megmutatom, melyik raktárban és polcon mennyi van belőle.</string>
+    <string name="lookup_no_stock">Ebből a termékből most sehol nincs készlet.</string>
+
+    <!-- Kamera -->
+    <string name="camera_hint">Tartsd a vonalkódot a keretbe.</string>
+    <string name="camera_denied">A kamerás beolvasáshoz engedély kell a kamera használatára.</string>
+    <string name="camera_allow">Engedélyezés</string>
+
+    <!-- Beállítások -->
+    <string name="settings_account">Fiók</string>
+    <string name="sign_out">Kijelentkezés</string>
+    <string name="sign_out_confirm">Kijelentkezel erről az eszközről? A többi eszközödön bejelentkezve maradsz.</string>
+    <string name="settings_scanner">Vonalkódolvasó</string>
+    <string name="settings_scanner_hint">A billentyűzet-emulációt (a PDA beírja a kódot és Entert nyom) minden olvasó tudja, ehhez nem kell beállítás. Ha a gyártó intentet küld, válaszd ki a típusát: így akkor is működik, ha nincs kijelölve a beolvasó mező.</string>
+    <string name="settings_intent_action">Intent action</string>
+    <string name="settings_intent_extra">Extra kulcs (a kód helye)</string>
+    <string name="settings_zebra_hint">DataWedge-ben a profil Intent outputját kapcsold be, az actiont állítsd erre: %1$s, a kézbesítés módja pedig legyen „Broadcast intent”.</string>
+    <string name="settings_test">Teszt</string>
+    <string name="settings_test_hint">Olvass be itt bármit, hogy lásd, megérkezik-e a kód.</string>
+    <string name="settings_test_received">Beérkezett: %1$s</string>
+
+    <string name="preset_keyboard">Csak billentyűzet-emuláció</string>
+    <string name="preset_zebra">Zebra (DataWedge)</string>
+    <string name="preset_honeywell">Honeywell</string>
+    <string name="preset_urovo">Urovo</string>
+    <string name="preset_newland">Newland</string>
+    <string name="preset_sunmi">Sunmi</string>
+    <string name="preset_idata">iData</string>
+    <string name="preset_custom">Egyéni intent</string>
+
+    <plurals name="lines_count">
+        <item quantity="one">%1$d tétel</item>
+        <item quantity="other">%1$d tétel</item>
+    </plurals>
+    <plurals name="lines_short">
+        <item quantity="one">%1$d tétel</item>
+        <item quantity="other">%1$d tétel</item>
+    </plurals>
+    <plurals name="discard_text">
+        <item quantity="one">A beolvasott %1$d tétel elveszik.</item>
+        <item quantity="other">A beolvasott %1$d tétel elveszik.</item>
+    </plurals>
+    <plurals name="done_summary">
+        <item quantity="one">%1$d tétel · %2$s</item>
+        <item quantity="other">%1$d tétel · %2$s</item>
+    </plurals>
+</resources>
