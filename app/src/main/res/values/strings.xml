@@ -118,6 +118,7 @@
     <string name="camera_hint">Tartsd a vonalkódot a keretbe.</string>
     <string name="camera_denied">A kamerás beolvasáshoz engedély kell a kamera használatára.</string>
     <string name="camera_allow">Engedélyezés</string>
+    <string name="camera_unavailable">Ezen az eszközön nincs használható hátsó kamera. Olvass be a beépített vonalkódolvasóval, vagy írd be a kódot kézzel.</string>
 
     <!-- Beállítások -->
     <string name="settings_account">Fiók</string>

@@ -128,7 +128,9 @@ fun LookupScreen(viewModel: LookupViewModel, scanner: ScannerConfig, onBack: () 
                                 if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                                 Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                                     Text(row.locationCode ?: stringResource(R.string.no_location), color = CxMuted, modifier = Modifier.weight(1f))
-                                    Text(formatQuantity(row.quantity), style = MaterialTheme.typography.bodyLarge)
+                                    // A negative shelf means stock was issued from it that was never booked onto it.
+                                    val negative = (row.quantity.toBigDecimalOrNull()?.signum() ?: 0) < 0
+                                    Text(formatQuantity(row.quantity), style = MaterialTheme.typography.bodyLarge, color = if (negative) CxDanger else MaterialTheme.colorScheme.onSurface)
                                 }
                             }
                         }

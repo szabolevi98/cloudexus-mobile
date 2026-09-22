@@ -67,6 +67,7 @@ fun CameraScanDialog(onCode: (String) -> Unit, onDismiss: () -> Unit) {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
     }
     var asked by remember { mutableStateOf(false) }
+    var unavailable by remember { mutableStateOf(false) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
         granted = result
         asked = true
@@ -75,8 +76,15 @@ fun CameraScanDialog(onCode: (String) -> Unit, onDismiss: () -> Unit) {
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxSize().background(Color.Black)) {
-            if (granted) {
-                CameraPreview(onCode)
+            if (unavailable) {
+                Text(
+                    stringResource(R.string.camera_unavailable),
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.align(Alignment.Center).padding(32.dp),
+                )
+            } else if (granted) {
+                CameraPreview(onCode, onUnavailable = { unavailable = true })
                 Box(
                     Modifier
                         .align(Alignment.Center)
@@ -109,11 +117,12 @@ fun CameraScanDialog(onCode: (String) -> Unit, onDismiss: () -> Unit) {
 
 @OptIn(ExperimentalGetImage::class)
 @Composable
-private fun CameraPreview(onCode: (String) -> Unit) {
+private fun CameraPreview(onCode: (String) -> Unit, onUnavailable: () -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentOnCode by rememberUpdatedState(onCode)
-    val previewView = remember { PreviewView(context) }
+    // TextureView mode: a SurfaceView sits behind the window, where the dialog's black background would cover it.
+    val previewView = remember { PreviewView(context).apply { implementationMode = PreviewView.ImplementationMode.COMPATIBLE } }
     val executor = remember { Executors.newSingleThreadExecutor() }
     val scanner = remember { BarcodeScanning.getClient() }
     val delivered = remember { AtomicBoolean(false) }
@@ -122,7 +131,13 @@ private fun CameraPreview(onCode: (String) -> Unit) {
         val providerFuture = ProcessCameraProvider.getInstance(context)
         var provider: ProcessCameraProvider? = null
         providerFuture.addListener({
-            val cameraProvider = providerFuture.get().also { provider = it }
+            // No back camera (a camera-less PDA, an emulator without one): say so instead of a black screen.
+            val cameraProvider = runCatching { providerFuture.get() }.getOrNull()
+            if (cameraProvider == null || runCatching { !cameraProvider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA) }.getOrDefault(true)) {
+                onUnavailable()
+                return@addListener
+            }
+            provider = cameraProvider
             val preview = Preview.Builder().build().also { it.surfaceProvider = previewView.surfaceProvider }
             val analysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -142,8 +157,14 @@ private fun CameraPreview(onCode: (String) -> Unit) {
                     }
                     .addOnCompleteListener { proxy.close() }
             }
-            cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, analysis)
+            try {
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, analysis)
+            } catch (e: IllegalArgumentException) {
+                onUnavailable()
+            } catch (e: IllegalStateException) {
+                onUnavailable()
+            }
         }, ContextCompat.getMainExecutor(context))
 
         onDispose {

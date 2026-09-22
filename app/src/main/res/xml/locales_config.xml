@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lets Android 13+ offer the app's own language in system settings, independent of the phone's. -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="hu" />
+    <locale android:name="en" />
+</locale-config>
