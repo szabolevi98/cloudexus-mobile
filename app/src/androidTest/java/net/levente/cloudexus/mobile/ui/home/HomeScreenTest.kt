@@ -2,10 +2,13 @@ package net.levente.cloudexus.mobile.ui.home
 
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.onRoot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -13,6 +16,7 @@ import net.levente.cloudexus.mobile.R
 import net.levente.cloudexus.mobile.data.api.User
 import net.levente.cloudexus.mobile.data.session.Session
 import net.levente.cloudexus.mobile.ui.theme.CloudexusTheme
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,8 +41,10 @@ class HomeScreenTest {
         serverLanguages = listOf("hu", "en"),
     )
 
+    private var settingsOpened = 0
+
     private fun show(session: Session) {
-        rule.setContent { CloudexusTheme { HomeScreen(session, onBooking = {}, onLookup = {}, onSettings = {}) } }
+        rule.setContent { CloudexusTheme { HomeScreen(session, onBooking = {}, onLookup = {}, onSettings = { settingsOpened++ }) } }
     }
 
     private fun save(name: String) {
@@ -65,6 +71,15 @@ class HomeScreenTest {
         rule.onNodeWithText(context.getString(R.string.mode_in)).assertDoesNotExist()
         rule.onNodeWithText(context.getString(R.string.mode_lookup)).assertIsDisplayed()
         save("home-viewer")
+    }
+
+    @Test
+    fun theAvatarAndTheGearBothOpenTheSettings() {
+        show(session("Raktáros", listOf("stock.move")))
+
+        rule.onNodeWithContentDescription(context.getString(R.string.account_and_settings)).assertHasClickAction().performClick()
+        rule.onNodeWithContentDescription(context.getString(R.string.settings)).performClick()
+        assertEquals(2, settingsOpened)
     }
 
     @Test

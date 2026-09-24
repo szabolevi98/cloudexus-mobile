@@ -84,7 +84,11 @@ fun SettingsScreen(
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
                         Text(session.user.fullName, style = MaterialTheme.typography.titleMedium)
-                        Text("${session.user.username} · ${session.baseUrl}", style = MaterialTheme.typography.bodyMedium, color = CxMuted)
+                        Text(
+                            listOfNotNull(session.user.username, session.user.roleName, session.baseUrl).joinToString(" · "),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = CxMuted,
+                        )
                     }
                 }
                 Spacer(Modifier.height(12.dp))

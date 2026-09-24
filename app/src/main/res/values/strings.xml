@@ -38,6 +38,7 @@
     <string name="home_greeting">Szia, %1$s!</string>
     <string name="home_section_movements">Raktári mozgások</string>
     <string name="home_section_info">Információ</string>
+    <string name="account_and_settings">Fiók és beállítások</string>
     <string name="home_no_booking_title">Készletmozgást nem rögzíthetsz</string>
     <string name="home_no_booking_text_role">A szerepköröd (%1$s) nem könyvelhet bevételt, kiadást vagy átadást; a készletet lekérdezheted. A jogot a rendszergazda adhatja meg a webes felületen.</string>
     <string name="home_no_booking_text">A szerepköröd nem könyvelhet bevételt, kiadást vagy átadást; a készletet lekérdezheted. A jogot a rendszergazda adhatja meg a webes felületen.</string>

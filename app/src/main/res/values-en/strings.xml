@@ -31,6 +31,7 @@
     <string name="home_greeting">Hi, %1$s!</string>
     <string name="home_section_movements">Stock movements</string>
     <string name="home_section_info">Information</string>
+    <string name="account_and_settings">Account and settings</string>
     <string name="home_no_booking_title">You cannot book stock movements</string>
     <string name="home_no_booking_text_role">Your role (%1$s) cannot book stock in, out or transfers; you can still look stock up. An administrator can grant it in the web app.</string>
     <string name="home_no_booking_text">Your role cannot book stock in, out or transfers; you can still look stock up. An administrator can grant it in the web app.</string>

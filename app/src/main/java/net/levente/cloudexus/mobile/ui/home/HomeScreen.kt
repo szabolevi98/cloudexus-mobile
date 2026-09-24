@@ -33,6 +33,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import net.levente.cloudexus.mobile.R
@@ -59,8 +62,13 @@ fun HomeScreen(session: Session, onBooking: (BookingMode) -> Unit, onLookup: () 
                 IconButton(onClick = onSettings) {
                     Icon(Icons.Rounded.Settings, stringResource(R.string.settings), tint = Color.White)
                 }
-                Avatar(session.user.fullName)
-                Spacer(Modifier.width(8.dp))
+                // The avatar looks like a button, so it is one: it opens the same page,
+                // which starts with the account (who is signed in, and signing out).
+                val accountLabel = stringResource(R.string.account_and_settings)
+                IconButton(onClick = onSettings, modifier = Modifier.semantics { contentDescription = accountLabel }) {
+                    Avatar(session.user.fullName)
+                }
+                Spacer(Modifier.width(4.dp))
             },
         )
 
@@ -132,7 +140,8 @@ private fun NoBookingNotice(roleName: String?) {
 /** The initial in a circle, like the user pill in the web app's top bar. */
 @Composable
 private fun Avatar(name: String) {
-    Box(Modifier.size(36.dp).clip(CircleShape).background(CxPrimary), contentAlignment = Alignment.Center) {
+    // The letter is decoration: the button around it says what it does.
+    Box(Modifier.size(36.dp).clip(CircleShape).background(CxPrimary).clearAndSetSemantics {}, contentAlignment = Alignment.Center) {
         Text(name.trim().take(1).uppercase(), color = Color.White, style = MaterialTheme.typography.titleSmall)
     }
 }
