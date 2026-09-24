@@ -1,144 +1,154 @@
-# 📦 Cloudexus Mobile
+# Cloudexus Mobile
 
-**Raktári bevét, kiadás és raktárközi átadás vonalkóddal, telefonon vagy PDA-n.**
+Stock in, stock out and transfers between warehouses, by barcode, on a phone or
+a handheld scanner.
 
-A [Cloudexus](https://github.com/szabolevi98/cloudexus) ügyviteli rendszer Android appja
-raktárosoknak. A webes felület a könyvelőé és a vezetőé; a raktárban viszont kézi vonalkódolvasó
-van, és nem böngésző. Az app a Cloudexus REST API-ján keresztül dolgozik: a raktáros a saját
-felhasználónevével lép be, beolvassa a polcot és az árut, és egy gombnyomással rögzíti. A mozgás
-azonnal megjelenik a webes felületen, az ő nevére könyvelve.
+The Android app of the [Cloudexus](https://github.com/szabolevi98/cloudexus)
+business management system, for the people in the warehouse. The web interface
+is for the office; the warehouse has barcode scanners, not browsers. The app
+works through the Cloudexus API: a warehouse worker signs in with their own
+username, scans the shelf and the goods, and books them with one button. The
+movement shows up in the web interface at once, credited to them.
 
-![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)
-![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)
-![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)
-![Status](https://img.shields.io/badge/St%C3%A1tusz-akt%C3%ADv%20fejleszt%C3%A9s-blue)
+![Cloudexus Mobile: the home screen, a stock-in, a stock-out short of stock, a lookup](docs/cover.png)
 
-![Cloudexus Mobile: főmenü, bevét, kiadás készlethiánnyal, készletlekérdezés](docs/cover.png)
+Written in Kotlin with Jetpack Compose and Material 3, in the web app's colours.
+Runs on Android 8.0 and later.
 
----
+## What it does
 
-## ✨ Mit tud
+### Stock movements
 
-### 🏭 Raktári mozgások
-- **Bevét, kiadás, raktárközi átadás**: raktár (átadásnál forrás- és célraktár) kiválasztása,
-  aztán a tételek beolvasása és rögzítés. Egy rögzítés akárhány tételt vihet, és vagy mind
-  lekönyvelődik, vagy egyik sem.
-- **Polccímkék**: a beolvasott polckód átállítja a helyet a következő tételekre. Így a raktáros
-  egyszerűen végigmegy a polcokon: polc, áru, áru, következő polc… A polc listából is választható.
-- **Ismételt beolvasás**: ugyanaz a termék ugyanazon a polcon újra beolvasva eggyel növeli a
-  mennyiséget. Pontos (akár tört) mennyiség a számra koppintva írható be.
-- **Készlet a beolvasáskor**: minden beolvasásnál látszik, mennyi van a termékből az adott
-  raktárban. Kiadásnál és átadásnál az app még küldés előtt szól, ha a lista többet kér, mint
-  amennyi van.
-- **Hibák a helyükön**: ha a szerver elutasítja a rögzítést (például készlethiány miatt), az
-  indoklás annál a tételnél jelenik meg, amelyikre vonatkozik („135 van, 150 kellene”).
+- **Stock in, stock out and transfers**: choose the warehouse (for a transfer,
+  where from and where to), scan the lines, book. A booking carries any number of
+  lines, and either all of them are booked or none is.
+- **Shelf labels**: a scanned shelf code sets the location for the lines that
+  follow, so a worker simply walks the shelves — shelf, item, item, next shelf.
+  The shelf can also be picked from a list.
+- **Scanning again**: the same product on the same shelf scanned again adds one.
+  An exact quantity, fractions included, is typed in with a tap on the number.
+- **Stock as it is scanned**: every scan shows how much of the product the
+  warehouse has. For a stock-out or a transfer the app warns before sending when
+  the list asks for more than there is.
+- **Errors where they belong**: when the server refuses a booking — short of
+  stock, say — the reason is shown on the line it is about ("135 in stock, 150
+  asked for").
 
-### 📶 Gyenge wifire tervezve
-A raktár végében gyakran akadozik a wifi. Ha a rögzítés elmegy, de a válasz nem jön vissza, a
-raktáros nem tudhatja, lekönyvelődött-e. Ezért az app minden rögzítést egy
-[`Idempotency-Key`](https://github.com/szabolevi98/cloudexus/blob/main/web/API.md#idempotency-key-safe-retries)
-kulccsal küld:
-- válasz nélküli küldés után a lista zárolódik, és egyetlen gomb marad: **Újraküldés**;
-- az újraküldés ugyanazzal a kulccsal megy, így a szerver a már lekönyvelt rögzítést nem
-  könyveli újra, hanem visszaadja az első választ;
-- két PDA-ról egyszerre indított kiadás sem viheti el ugyanazt az utolsó darabot, mert a
-  szerver raktáranként sorba rendezi a rögzítéseket.
+### Built for bad Wi-Fi
 
-### 🔎 Készletlekérdezés
-Bármi beolvasható rögzítés nélkül is: az app megmutatja, melyik raktárban és melyik polcon mennyi
-van belőle. A negatív készletű polcok pirossal jelennek meg (ilyenkor a polcról többet adtak ki,
-mint amennyit oda bevételeztek).
+The Wi-Fi at the back of a warehouse drops out. When a booking goes out and the
+answer does not come back, nobody can tell whether it was booked. So every
+booking is sent with an
+[`Idempotency-Key`](https://github.com/szabolevi98/cloudexus/blob/main/web/API.md#idempotency-key-safe-retries):
 
-### 🔫 Vonalkódolvasók
-| Mód | Mire jó | Beállítás |
+- after a send without an answer the list is locked, and one button is left:
+  **Send again**;
+- sending again uses the same key, so the server does not book a booking twice,
+  it answers with its first answer;
+- two scanners booking out the last piece at the same moment cannot both have
+  it: the server queues bookings per warehouse.
+
+### Stock lookup
+
+Anything can be scanned without booking it: the app shows how much of it is in
+which warehouse and on which shelf. A shelf with negative stock is shown in red
+(more was booked out of it than into it).
+
+### Barcode scanners
+
+| Mode | What it is for | Setup |
 |---|---|---|
-| **Billentyűzet-emuláció** | Szinte minden PDA tudja: beírja a kódot és Entert nyom | Nem kell |
-| **Broadcast intent** | Akkor is működik, ha nincs kijelölve a beolvasó mező | Beállítások → Vonalkódolvasó |
-| **Kamera** | Beépített olvasó nélküli telefonon | A kamera gomb a beolvasó mezőben |
+| **Keyboard wedge** | Nearly every scanner does it: types the code and presses Enter | None |
+| **Broadcast intent** | Works even when the scan field is not focused | Settings → Barcode scanner |
+| **Camera** | Phones without a built-in scanner | The camera button in the scan field |
 
-Broadcast intenthez előre beállított típusok: **Zebra** (DataWedge), **Honeywell**, **Urovo**,
-**Newland**, **Sunmi**, **iData**, egyedi action és extra kulccsal pedig bármi más. A Beállítások
-oldalon egy tesztmezőben rögtön kipróbálható, megérkezik-e a kód.
+Broadcast intents come preset for **Zebra** (DataWedge), **Honeywell**,
+**Urovo**, **Newland**, **Sunmi** and **iData**, and anything else takes its
+own action and extra key. A test field on the Settings page shows at once
+whether a code arrives.
 
-> **Zebra DataWedge:** a profilban kapcsold be az *Intent output*-ot, az action legyen
-> `net.levente.cloudexus.mobile.SCAN`, a kézbesítés módja pedig *Broadcast intent*.
+> **Zebra DataWedge:** in the profile, switch *Intent output* on, set the action
+> to `net.levente.cloudexus.mobile.SCAN` and the delivery to *Broadcast intent*.
 
-A beolvasó mező nem hagyományos szövegmező, ezért a képernyő-billentyűzet nem ugrik fel minden
-beolvasásnál, és az olvasó Entere sem vész el a billentyűzetben. Kézi beíráshoz a billentyűzet
-ikonnal lehet átváltani. A kamerás olvasás az ML Kit beépített modelljével megy, ezért Google
-Play-szolgáltatás nélküli PDA-n is működik (EAN, UPC, Code 128, QR és a többi elterjedt formátum).
+The scan field is not an ordinary text field, so the on-screen keyboard does not
+pop up with every scan and the scanner's Enter is not swallowed by it; the
+keyboard icon switches to typing by hand. The camera reads codes with ML Kit's
+bundled model, so it works on scanners without Google Play services too (EAN,
+UPC, Code 128, QR and the other common formats).
 
-### 🔐 Biztonság
-- Mindenki a **saját Cloudexus-fiókjával** lép be. A token a szerveren csak hash-ként van tárolva,
-  a telefonon pedig az Android Keystore kulcsával titkosítva, ami az eszközt nem hagyja el. Az
-  app adatai nem kerülnek biztonsági mentésbe.
-- A token 90 nap használaton kívüli idő után jár le. Deaktivált felhasználónál vagy
-  jelszóváltás után azonnal érvénytelen, és ilyenkor az app a belépési képernyőre küld.
-- Az app a Cloudexus **szerepkörét** követi: akinek a szerepköre nem könyvelhet készletmozgást,
-  annak a bevét, kiadás és átadás helyett egy magyarázat jelenik meg (a készletlekérdezés marad).
-  A jogot mindig a szerver ellenőrzi; egy a weben átállított szerepkör az első elutasított
-  kérés után az appban is látszik.
-- A kiadott (release) verzió csak HTTPS-en kommunikál. Titkosítatlan HTTP csak a debug buildben
-  engedélyezett, az emulátorból elérhető helyi szerverhez (`10.0.2.2`).
+### Roles
 
-### 🌐 Nyelvek
-Magyar és angol, a telefon nyelve szerint. Android 13-tól az app nyelve a rendszerbeállításokban
-külön is választható. A terméknevek is ezen a nyelven jönnek, ha a Cloudexus-telepítésben van
-ilyen fordítás.
+Cloudexus gives every user a role, and the app follows it. A role that may not
+book stock movements sees, in place of stock in, out and transfer, why not and
+who can change it; stock lookup stays. The server checks every booking anyway: a
+role changed on the web shows in the app after the first booking it refuses, or
+the next time the app starts.
 
----
+### Security
 
-## 📸 Képernyők
+- Everybody signs in with **their own Cloudexus account**. The server keeps only
+  a hash of the token; the phone keeps it encrypted with an Android Keystore key
+  that never leaves the device. The app's data is left out of backups.
+- The token expires after 90 days without use, and stops working at once when
+  the user is deactivated or changes their password; the app then goes back to
+  the sign-in screen.
+- The release build talks HTTPS only. Plain HTTP is allowed in the debug build,
+  for a local server reached from the emulator (`10.0.2.2`).
 
-| Belépés | Főmenü | Bevét beolvasás közben |
+### Languages
+
+Hungarian and English, following the phone's language; from Android 13 the
+app's language can be chosen on its own in the system settings. Product names
+come in that language too, where the Cloudexus installation has the
+translation.
+
+## Screens
+
+| Sign-in | Home | Stock in, scanning |
 |---|---|---|
-| ![Belépés](docs/screenshots/login.png) | ![Főmenü](docs/screenshots/home.png) | ![Bevét](docs/screenshots/stock-in.png) |
+| ![Sign-in](docs/screenshots/login.png) | ![Home](docs/screenshots/home.png) | ![Stock in](docs/screenshots/stock-in.png) |
 
-| Kiadás készlethiánnyal | Rögzítve | Készletlekérdezés |
+| Stock out, short of stock | Booked | Stock lookup |
 |---|---|---|
-| ![Kiadás](docs/screenshots/stock-out-shortage.png) | ![Rögzítve](docs/screenshots/booked.png) | ![Lekérdezés](docs/screenshots/lookup.png) |
+| ![Stock out](docs/screenshots/stock-out-shortage.png) | ![Booked](docs/screenshots/booked.png) | ![Lookup](docs/screenshots/lookup.png) |
 
----
+## Installing it
 
-## 🚀 Telepítés
+1. Download the latest `cloudexus-mobile-*.apk` from the
+   [releases](https://github.com/szabolevi98/cloudexus-mobile/releases) page.
+2. Install it on the phone or the scanner. The first time, Android asks to
+   allow apps from unknown sources.
+3. On first start, enter the Cloudexus server's address (say
+   `cloudexus.example.com`), your username and your password.
 
-1. Töltsd le a legfrissebb `cloudexus-mobile-*.apk` fájlt a
-   [Releases](https://github.com/szabolevi98/cloudexus-mobile/releases) oldalról.
-2. Telepítsd a telefonra vagy a PDA-ra. Az első telepítésnél az Android engedélyt kér az
-   ismeretlen forrásból származó alkalmazásokhoz.
-3. Indításkor add meg a Cloudexus szerver címét (pl. `cloudexus.example.com`), a
-   felhasználóneved és a jelszavad.
+It needs **Android 8.0 (API 26)** or later, and a Cloudexus server with the
+mobile endpoints (`/api/auth/*`, `/api/products/lookup`,
+`/api/stock/in|out|transfer`) — any version from 22 September 2026 on, with
+`php database/migrate.php` run. The roles need a version from 24 September 2026;
+with an older one the app hides nothing.
 
-**Követelmények:**
-- **Android 8.0 (API 26)** vagy újabb.
-- Olyan Cloudexus-szerver, amelyen már vannak a mobil végpontok (`/api/auth/*`,
-  `/api/products/lookup`, `/api/stock/in|out|transfer`), vagyis a
-  [2026. szeptember 22-i](https://github.com/szabolevi98/cloudexus/commits/main) vagy újabb verzió,
-  lefuttatott `php database/migrate.php`-vel.
+## Building it
 
-## 🛠️ Fejlesztés
-
-| Réteg | Megoldás |
+| Layer | |
 |---|---|
-| Nyelv, UI | Kotlin 2.4, Jetpack Compose, Material 3 a webes Cloudexus színeivel |
-| Hálózat | OkHttp 5 + kotlinx.serialization |
-| Tárolás | DataStore; a token Android Keystore AES-GCM kulccsal titkosítva |
-| Kamera | CameraX + ML Kit Barcode Scanning (beépített modell) |
+| Language, UI | Kotlin 2.4, Jetpack Compose, Material 3 in the web app's colours |
+| Network | OkHttp 5 and kotlinx.serialization |
+| Storage | DataStore; the token encrypted with an Android Keystore AES-GCM key |
+| Camera | CameraX and ML Kit Barcode Scanning (bundled model) |
 | Build | Gradle 9.7, Android Gradle Plugin 9.4, compileSdk 37, minSdk 26 |
 
-```bash
-# Debug build a helyi szerverhez (emulátorból: http://10.0.2.2/cloudexus/web)
-./gradlew assembleDebug
-
-# Unit tesztek (a könyvelési lista logikája és az API-kliens egy mock szerver ellen)
-./gradlew testDebugUnitTest
-
-# Debug build R8-cal, pontosan úgy minifikálva, mint a release, de a helyi szerverhez.
-# Kiadás előtt ezzel érdemes kipróbálni a kamerát: az ML Kit reflexiója csak minifikálva törik el.
-./gradlew assembleDebug -PminifyDebug
+```
+./gradlew assembleDebug                 # a debug build for a local server (from the emulator: http://10.0.2.2/cloudexus/web)
+./gradlew testDebugUnitTest             # the booking list's logic, and the API client against a mock server
+./gradlew connectedDebugAndroidTest     # on a running emulator: the home screen for each kind of role
+./gradlew assembleDebug -PminifyDebug   # a debug build shrunk by R8 exactly like the release
 ```
 
-Aláírt release buildhez a projekt gyökerébe kell egy `keystore.properties` (Git által ignorált):
+Try the camera on the `-PminifyDebug` build before a release: ML Kit's
+reflection breaks only when the code is shrunk.
+
+A signed release build needs a `keystore.properties` in the project root (never
+committed):
 
 ```properties
 storeFile=C:/path/to/release.jks
@@ -147,26 +157,27 @@ keyAlias=cloudexus-mobile
 keyPassword=...
 ```
 
-Nélküle a `./gradlew assembleRelease` aláíratlan APK-t készít.
+Without it, `./gradlew assembleRelease` makes an unsigned APK.
 
-### Projektstruktúra
+### Layout
 
 ```
 app/src/main/java/net/levente/cloudexus/mobile/
-├── data/
-│   ├── api/        # ApiClient (a Cloudexus REST API), modellek, hibatípusok
-│   ├── session/    # bejelentkezés, titkosított token, lejárat kezelése
-│   └── scanner/    # PDA-típusok (broadcast intent) és a beolvasás fogadása
-└── ui/
-    ├── booking/    # bevét / kiadás / átadás: a lista logikája (Draft) és a képernyő
-    ├── lookup/     # készletlekérdezés
-    ├── login/, home/, settings/, scan/ (kamera)
-    ├── components/ # közös elemek: fejléc, kártya, beolvasó mező, mennyiségléptető
-    └── theme/      # a webes Cloudexus design tokenjei
+  data/api/        the Cloudexus API client, its models and errors
+  data/session/    sign-in, the encrypted token, expiry
+  data/scanner/    scanner types (broadcast intents) and receiving scans
+  ui/booking/      stock in, out and transfer: the list's logic (Draft) and the screen
+  ui/lookup/       stock lookup
+  ui/login/, ui/home/, ui/settings/, ui/scan/ (the camera)
+  ui/components/   shared pieces: header, card, scan field, quantity stepper
+  ui/theme/        the web app's design tokens
+app/src/test/          unit tests
+app/src/androidTest/   tests on a device or emulator
 ```
 
-A teljes API-leírás a Cloudexus repóban van: [web/API.md](https://github.com/szabolevi98/cloudexus/blob/main/web/API.md).
+The whole API is described in the Cloudexus repository:
+[web/API.md](https://github.com/szabolevi98/cloudexus/blob/main/web/API.md).
 
-## 📄 Licenc
+## License
 
-[GNU AGPLv3](LICENSE), ugyanúgy, mint a Cloudexus. © 2026 [szabolevi98](https://github.com/szabolevi98)
+[GNU AGPLv3](LICENSE), like Cloudexus. © 2026 [szabolevi98](https://github.com/szabolevi98)
