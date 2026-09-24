@@ -74,6 +74,10 @@ Play-szolgáltatás nélküli PDA-n is működik (EAN, UPC, Code 128, QR és a t
   app adatai nem kerülnek biztonsági mentésbe.
 - A token 90 nap használaton kívüli idő után jár le. Deaktivált felhasználónál vagy
   jelszóváltás után azonnal érvénytelen, és ilyenkor az app a belépési képernyőre küld.
+- Az app a Cloudexus **szerepkörét** követi: akinek a szerepköre nem könyvelhet készletmozgást,
+  annak a bevét, kiadás és átadás helyett egy magyarázat jelenik meg (a készletlekérdezés marad).
+  A jogot mindig a szerver ellenőrzi; egy a weben átállított szerepkör az első elutasított
+  kérés után az appban is látszik.
 - A kiadott (release) verzió csak HTTPS-en kommunikál. Titkosítatlan HTTP csak a debug buildben
   engedélyezett, az emulátorból elérhető helyi szerverhez (`10.0.2.2`).
 
