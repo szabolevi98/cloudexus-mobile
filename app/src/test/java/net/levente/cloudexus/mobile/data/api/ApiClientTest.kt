@@ -127,6 +127,39 @@ class ApiClientTest {
     }
 
     @Test
+    fun `me carries the role and its permissions`() = runTest {
+        respond(200, """{"data":{"user":{"id":4,"username":"pdateszt","full_name":"PDA Teszt","email":"x@y","role":"user","role_code":"viewer","role_name":"Csak olvasó","permissions":["dashboard.view","stock.view"]},"expires_at":"2026-12-21 21:28:53"}}""")
+
+        val user = api.me(connection)
+
+        assertEquals("Csak olvasó", user.roleName)
+        assertEquals(false, user.canMoveStock)
+        assertTrue(user.can("stock.view"))
+    }
+
+    @Test
+    fun `a server older than roles sends no permissions, and nothing is hidden`() = runTest {
+        respond(200, """{"data":{"user":{"id":4,"username":"pdateszt","full_name":"PDA Teszt","email":"x@y","role":"user"},"expires_at":"2026-12-21 21:28:53"}}""")
+
+        val user = api.me(connection)
+
+        assertNull(user.permissions)
+        assertTrue(user.canMoveStock)
+    }
+
+    @Test
+    fun `a booking the role does not allow is an Http 403`() = runTest {
+        respond(403, """{"error":{"status":403,"message":"Your role does not allow this: stock.move."}}""")
+
+        try {
+            api.book(connection, "stock/in", buildJsonObject { put("warehouse_id", 1) }, "key-12345678")
+            fail("expected an exception")
+        } catch (e: ApiException.Http) {
+            assertEquals(403, e.status)
+        }
+    }
+
+    @Test
     fun `a booking receipt counts movements and transfer lines`() = runTest {
         respond(201, """{"data":{"type":"in","movements":[{"id":1},{"id":2}]}}""")
         assertEquals(2, api.book(connection, "stock/in", buildJsonObject { }, "key-12345678").data.lineCount)

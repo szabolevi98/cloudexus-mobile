@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.ManageSearch
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,7 +54,7 @@ fun HomeScreen(session: Session, onBooking: (BookingMode) -> Unit, onLookup: () 
         CxHeader(
             // The whole name: in Hungarian order the first word is the family name.
             title = stringResource(R.string.home_greeting, session.user.fullName),
-            subtitle = host(session.baseUrl),
+            subtitle = listOfNotNull(host(session.baseUrl), session.user.roleName).joinToString(" · "),
             actions = {
                 IconButton(onClick = onSettings) {
                     Icon(Icons.Rounded.Settings, stringResource(R.string.settings), tint = Color.White)
@@ -72,9 +73,13 @@ fun HomeScreen(session: Session, onBooking: (BookingMode) -> Unit, onLookup: () 
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SectionLabel(stringResource(R.string.home_section_movements), Modifier.padding(start = 4.dp, top = 4.dp))
-            for (mode in BookingMode.entries) {
-                val style = mode.style
-                ActionTile(stringResource(style.title), stringResource(style.subtitle), style.icon, style.color) { onBooking(mode) }
+            if (session.user.canMoveStock) {
+                for (mode in BookingMode.entries) {
+                    val style = mode.style
+                    ActionTile(stringResource(style.title), stringResource(style.subtitle), style.icon, style.color) { onBooking(mode) }
+                }
+            } else {
+                NoBookingNotice(session.user.roleName)
             }
             SectionLabel(stringResource(R.string.home_section_info), Modifier.padding(start = 4.dp, top = 8.dp))
             ActionTile(
@@ -100,6 +105,26 @@ private fun ActionTile(title: String, subtitle: String, icon: ImageVector, color
                 Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = CxMuted, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
             Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null, tint = CxMuted)
+        }
+    }
+}
+
+/** Instead of the booking tiles, for a role that may not move stock: why, and who can change it. */
+@Composable
+private fun NoBookingNotice(roleName: String?) {
+    CxCard(modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconTile(Icons.Rounded.Lock, CxMuted, size = 56.dp)
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.home_no_booking_title), style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    if (roleName != null) stringResource(R.string.home_no_booking_text_role, roleName) else stringResource(R.string.home_no_booking_text),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = CxMuted,
+                )
+            }
         }
     }
 }

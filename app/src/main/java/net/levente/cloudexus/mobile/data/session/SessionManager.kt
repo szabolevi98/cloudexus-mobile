@@ -41,18 +41,31 @@ class SessionManager(
                 return@launch
             }
             _state.value = SessionState.SignedIn(session)
-            try {
-                val user = api.me(session.connection())
-                if (user != session.user) {
-                    val updated = session.copy(user = user)
-                    store.save(updated)
-                    _state.value = SessionState.SignedIn(updated)
-                }
-            } catch (e: ApiException.Unauthorized) {
-                expire()
-            } catch (e: ApiException) {
-                // Offline or server trouble: keep working with the stored session.
+            refresh(session)
+        }
+    }
+
+    /**
+     * Reads the user again — after the server refused something (403), the
+     * role may have changed on the web since sign-in; the home screen follows.
+     */
+    fun refreshUser() {
+        val session = current ?: return
+        scope.launch { refresh(session) }
+    }
+
+    private suspend fun refresh(session: Session) {
+        try {
+            val user = api.me(session.connection())
+            if (user != session.user) {
+                val updated = session.copy(user = user)
+                store.save(updated)
+                _state.value = SessionState.SignedIn(updated)
             }
+        } catch (e: ApiException.Unauthorized) {
+            expire()
+        } catch (e: ApiException) {
+            // Offline or server trouble: keep working with the stored session.
         }
     }
 

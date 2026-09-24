@@ -10,7 +10,24 @@ data class User(
     @SerialName("full_name") val fullName: String,
     val email: String = "",
     val role: String = "user",
-)
+    @SerialName("role_code") val roleCode: String? = null,
+    @SerialName("role_name") val roleName: String? = null,
+    /**
+     * What the user's role may do, the keys of the web app's permission matrix.
+     * Null from a server older than roles: then nothing is hidden, and the
+     * server still decides every request.
+     */
+    val permissions: List<String>? = null,
+) {
+    fun can(permission: String): Boolean = permissions == null || permission in permissions
+
+    /** Stock in, out and transfers. */
+    val canMoveStock: Boolean get() = can(STOCK_MOVE)
+
+    companion object {
+        const val STOCK_MOVE = "stock.move"
+    }
+}
 
 @Serializable
 data class LoginResult(

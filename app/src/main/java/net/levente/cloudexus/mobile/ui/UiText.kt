@@ -23,5 +23,9 @@ fun ApiException.toUiText(): UiText = when (this) {
     is ApiException.Network -> UiText.Res(R.string.error_network)
     is ApiException.Unauthorized -> UiText.Res(R.string.error_session_expired)
     is ApiException.BadResponse -> UiText.Res(R.string.error_bad_response)
-    is ApiException.Http -> UiText.Res(R.string.error_server, listOf(message ?: status.toString()))
+    is ApiException.Http -> if (status == 403) {
+        UiText.Res(R.string.error_forbidden)
+    } else {
+        UiText.Res(R.string.error_server, listOf(message ?: status.toString()))
+    }
 }

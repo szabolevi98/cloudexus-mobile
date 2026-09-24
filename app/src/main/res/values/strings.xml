@@ -17,6 +17,7 @@
     <string name="error_session_expired">A bejelentkezésed lejárt. Jelentkezz be újra.</string>
     <string name="error_bad_response">A szerver nem Cloudexus-választ adott. Ellenőrizd a szervercímet.</string>
     <string name="error_server">A szerver hibát jelzett: %1$s</string>
+    <string name="error_forbidden">A szerepköröd ezt nem engedi. Ha szükséged van rá, kérd meg a rendszergazdát, hogy a webes felületen adja meg.</string>
 
     <!-- Bejelentkezés -->
     <string name="login_tagline">Raktári bevét, kiadás és átadás, vonalkóddal.</string>
@@ -37,6 +38,9 @@
     <string name="home_greeting">Szia, %1$s!</string>
     <string name="home_section_movements">Raktári mozgások</string>
     <string name="home_section_info">Információ</string>
+    <string name="home_no_booking_title">Készletmozgást nem rögzíthetsz</string>
+    <string name="home_no_booking_text_role">A szerepköröd (%1$s) nem könyvelhet bevételt, kiadást vagy átadást; a készletet lekérdezheted. A jogot a rendszergazda adhatja meg a webes felületen.</string>
+    <string name="home_no_booking_text">A szerepköröd nem könyvelhet bevételt, kiadást vagy átadást; a készletet lekérdezheted. A jogot a rendszergazda adhatja meg a webes felületen.</string>
 
     <string name="mode_in">Raktári bevét</string>
     <string name="mode_in_subtitle">Beérkező áru rögzítése</string>

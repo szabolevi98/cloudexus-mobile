@@ -310,5 +310,7 @@ class BookingViewModel(
 
     private fun handle(e: ApiException) {
         if (e is ApiException.Unauthorized) sessions.expire()
+        // The role changed on the web: learn it, so the home screen stops offering bookings.
+        if (e is ApiException.Http && e.status == 403) sessions.refreshUser()
     }
 }
