@@ -5,7 +5,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
@@ -30,11 +30,16 @@ data class Connection(val baseUrl: String, val token: String, val language: Stri
  */
 class ApiClient(private val http: OkHttpClient, private val json: Json) {
 
-    suspend fun login(baseUrl: String, username: String, password: String, deviceName: String): LoginResult {
+    /**
+     * [code] is the two-step sign-in code, for a user who has it turned on:
+     * without it the server answers 403 with [ApiException.Http.twoFactorRequired].
+     */
+    suspend fun login(baseUrl: String, username: String, password: String, deviceName: String, code: String? = null): LoginResult {
         val body = buildJsonObject {
             put("username", username)
             put("password", password)
             put("device_name", deviceName)
+            if (code != null) put("code", code)
         }
         val request = Request.Builder()
             .url(url(baseUrl, "auth/login", null))
@@ -139,12 +144,12 @@ class ApiClient(private val http: OkHttpClient, private val json: Json) {
         }
 
     /** {"error": {"status", "message", "details"?}} as (status, message, details), or null. */
-    private fun parseError(text: String): Triple<Int, String, JsonArray?>? = try {
+    private fun parseError(text: String): Triple<Int, String, JsonElement?>? = try {
         val error = json.parseToJsonElement(text).jsonObject["error"]?.jsonObject ?: return null
         Triple(
             error["status"]?.jsonPrimitive?.contentOrNull?.toIntOrNull() ?: 0,
             error["message"]?.jsonPrimitive?.contentOrNull ?: "",
-            error["details"] as? JsonArray,
+            error["details"],
         )
     } catch (e: SerializationException) {
         null

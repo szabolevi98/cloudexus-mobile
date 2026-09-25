@@ -66,6 +66,50 @@ class ApiClientTest {
     }
 
     @Test
+    fun `a user with two-step sign-in on is asked for the code, and it is sent the second time`() = runTest {
+        respond(403, """{"error":{"status":403,"message":"A two-step sign-in code is required.","details":{"two_factor_required":true}}}""")
+        respond(201, """{"data":{"token":"cxu_abc","expires_at":"2026-12-21 21:28:53","user":{"id":4,"username":"pdateszt","full_name":"PDA Teszt","email":"x@y","role":"user"}}}""")
+
+        try {
+            api.login(baseUrl, "pdateszt", "Teszt1234", "Emulator")
+            fail("expected an exception")
+        } catch (e: ApiException.Http) {
+            assertEquals(403, e.status)
+            assertTrue(e.twoFactorRequired)
+            assertTrue(e.lineProblems().isEmpty())
+        }
+        assertTrue(!server.takeRequest().body!!.utf8().contains("\"code\""))
+
+        assertEquals("cxu_abc", api.login(baseUrl, "pdateszt", "Teszt1234", "Emulator", "492817").token)
+        assertTrue(server.takeRequest().body!!.utf8().contains("\"code\":\"492817\""))
+    }
+
+    @Test
+    fun `a wrong two-step code is a 401 that still says a code is wanted`() = runTest {
+        respond(401, """{"error":{"status":401,"message":"That two-step sign-in code is not right.","details":{"two_factor_required":true}}}""")
+
+        try {
+            api.login(baseUrl, "pdateszt", "Teszt1234", "Emulator", "000000")
+            fail("expected an exception")
+        } catch (e: ApiException.Http) {
+            assertEquals(401, e.status)
+            assertTrue(e.twoFactorRequired)
+        }
+    }
+
+    @Test
+    fun `an ordinary refusal is not taken for a two-step question`() = runTest {
+        respond(403, """{"error":{"status":403,"message":"Forbidden."}}""")
+
+        try {
+            api.login(baseUrl, "pdateszt", "Teszt1234", "Emulator")
+            fail("expected an exception")
+        } catch (e: ApiException.Http) {
+            assertTrue(!e.twoFactorRequired)
+        }
+    }
+
+    @Test
     fun `a rejected token elsewhere means the session expired`() = runTest {
         respond(401, """{"error":{"status":401,"message":"Invalid or missing API token."}}""")
 

@@ -69,9 +69,9 @@ class SessionManager(
         }
     }
 
-    /** Throws [ApiException] when the sign-in fails. */
-    suspend fun signIn(baseUrl: String, username: String, password: String, deviceName: String): Session {
-        val result = api.login(baseUrl, username, password, deviceName)
+    /** Throws [ApiException] when the sign-in fails; [code] is the two-step sign-in code, when the user has it on. */
+    suspend fun signIn(baseUrl: String, username: String, password: String, deviceName: String, code: String? = null): Session {
+        val result = api.login(baseUrl, username, password, deviceName, code)
         val languages = try {
             api.languages(baseUrl, result.token)
         } catch (e: ApiException) {

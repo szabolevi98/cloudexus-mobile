@@ -26,6 +26,13 @@
     <string name="login_fields_required">Enter your username and password.</string>
     <string name="login_wrong_credentials">Wrong username or password.</string>
     <string name="login_throttled">Too many failed attempts. Try again in 15 minutes.</string>
+    <string name="login_code_lead">Two-step sign-in: type the code from your authenticator app too.</string>
+    <string name="login_code">Code from the app</string>
+    <string name="login_recovery_code">Recovery code</string>
+    <string name="login_use_recovery_code">Use a recovery code</string>
+    <string name="login_use_app_code">Use the code from the app</string>
+    <string name="login_code_required">Type the code from your authenticator app.</string>
+    <string name="login_code_wrong">That code is not right. Codes change every 30 seconds — type the one showing now.</string>
     <string name="login_footer">Cloudexus Mobile %1$s</string>
 
     <string name="home_greeting">Hi, %1$s!</string>

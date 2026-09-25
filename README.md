@@ -89,6 +89,9 @@ the next time the app starts.
 - Everybody signs in with **their own Cloudexus account**. The server keeps only
   a hash of the token; the phone keeps it encrypted with an Android Keystore key
   that never leaves the device. The app's data is left out of backups.
+- **Two-step sign-in**: a user who has turned it on in Cloudexus (on their
+  profile) is asked for the code from their authenticator app after the
+  password, or one of their recovery codes. Users without it see no extra step.
 - The token expires after 90 days without use, and stops working at once when
   the user is deactivated or changes their password; the app then goes back to
   the sign-in screen.
@@ -119,7 +122,8 @@ translation.
 2. Install it on the phone or the scanner. The first time, Android asks to
    allow apps from unknown sources.
 3. On first start, enter the Cloudexus server's address (say
-   `cloudexus.example.com`), your username and your password.
+   `cloudexus.example.com`), your username and your password — and, with
+   two-step sign-in on, the code from your authenticator app.
 
 It needs **Android 8.0 (API 26)** or later, and a Cloudexus server with the
 mobile endpoints (`/api/auth/*`, `/api/products/lookup`,

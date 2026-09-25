@@ -24,6 +24,7 @@ import androidx.compose.material.icons.rounded.Dns
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.Icon
@@ -31,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +44,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -63,9 +67,15 @@ import net.levente.cloudexus.mobile.ui.theme.CxDanger
 import net.levente.cloudexus.mobile.ui.theme.CxDangerSoft
 import net.levente.cloudexus.mobile.ui.theme.CxNavyGradient
 import net.levente.cloudexus.mobile.ui.theme.CxNavyText
+import net.levente.cloudexus.mobile.ui.theme.CxPrimary
+import net.levente.cloudexus.mobile.ui.theme.CxPrimarySoft
 import net.levente.cloudexus.mobile.ui.toUiText
 
-/** Sign-in with the worker's own Cloudexus username (or e-mail) and password. */
+/**
+ * Sign-in with the worker's own Cloudexus username (or e-mail) and password,
+ * and the code from their authenticator app when they have two-step sign-in
+ * on — the field for it appears once the server asks.
+ */
 @Composable
 fun LoginScreen(sessions: SessionManager, expired: Boolean) {
     var server by rememberSaveable { mutableStateOf("") }
@@ -74,6 +84,12 @@ fun LoginScreen(sessions: SessionManager, expired: Boolean) {
     var password by remember { mutableStateOf("") }
     var showPassword by rememberSaveable { mutableStateOf(false) }
     var busy by rememberSaveable { mutableStateOf(false) }
+    // Two-step sign-in: set once the server says this user needs a code.
+    var codeNeeded by rememberSaveable { mutableStateOf(false) }
+    var code by remember { mutableStateOf("") }
+    // Recovery codes have letters, so they need the full keyboard.
+    var recoveryCode by rememberSaveable { mutableStateOf(false) }
+    val codeFocus = remember { FocusRequester() }
     var error by remember { mutableStateOf<UiText?>(if (expired) UiText.Res(R.string.error_session_expired) else null) }
     val scope = rememberCoroutineScope()
     val focus = LocalFocusManager.current
@@ -88,18 +104,33 @@ fun LoginScreen(sessions: SessionManager, expired: Boolean) {
         when {
             baseUrl == null -> error = UiText.Res(R.string.login_server_invalid)
             username.isBlank() || password.isEmpty() -> error = UiText.Res(R.string.login_fields_required)
+            codeNeeded && code.isBlank() -> {
+                error = UiText.Res(R.string.login_code_required)
+                codeFocus.requestFocus()
+            }
             else -> {
                 busy = true
                 error = null
                 focus.clearFocus()
                 scope.launch {
                     try {
-                        sessions.signIn(baseUrl, username.trim(), password, deviceName())
+                        sessions.signIn(baseUrl, username.trim(), password, deviceName(), if (codeNeeded) code.trim() else null)
                     } catch (e: ApiException.Http) {
-                        error = when (e.status) {
-                            401 -> UiText.Res(R.string.login_wrong_credentials)
-                            429 -> UiText.Res(R.string.login_throttled)
-                            else -> e.toUiText()
+                        error = when {
+                            // The password was right; now the code. 403 when none was sent yet.
+                            e.twoFactorRequired && e.status == 403 -> {
+                                codeNeeded = true
+                                null
+                            }
+                            e.twoFactorRequired -> {
+                                code = ""
+                                UiText.Res(R.string.login_code_wrong)
+                            }
+                            else -> when (e.status) {
+                                401 -> UiText.Res(R.string.login_wrong_credentials)
+                                429 -> UiText.Res(R.string.login_throttled)
+                                else -> e.toUiText()
+                            }
                         }
                     } catch (e: ApiException) {
                         error = e.toUiText()
@@ -109,6 +140,10 @@ fun LoginScreen(sessions: SessionManager, expired: Boolean) {
                 }
             }
         }
+    }
+
+    LaunchedEffect(codeNeeded) {
+        if (codeNeeded) codeFocus.requestFocus()
     }
 
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
@@ -134,7 +169,7 @@ fun LoginScreen(sessions: SessionManager, expired: Boolean) {
 
                 OutlinedTextField(
                     value = server,
-                    onValueChange = { server = it },
+                    onValueChange = { server = it; codeNeeded = false },
                     label = { Text(stringResource(R.string.login_server)) },
                     leadingIcon = { Icon(Icons.Rounded.Dns, contentDescription = null) },
                     singleLine = true,
@@ -145,7 +180,7 @@ fun LoginScreen(sessions: SessionManager, expired: Boolean) {
                 Spacer(Modifier.height(12.dp))
                 OutlinedTextField(
                     value = username,
-                    onValueChange = { username = it },
+                    onValueChange = { username = it; codeNeeded = false },
                     label = { Text(stringResource(R.string.login_username)) },
                     leadingIcon = { Icon(Icons.Rounded.Person, contentDescription = null) },
                     singleLine = true,
@@ -170,9 +205,39 @@ fun LoginScreen(sessions: SessionManager, expired: Boolean) {
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Go),
-                    keyboardActions = KeyboardActions(onGo = { signIn() }),
+                    keyboardActions = KeyboardActions(onGo = { if (codeNeeded && code.isBlank()) codeFocus.requestFocus() else signIn() }),
                     modifier = Modifier.fillMaxWidth(),
                 )
+
+                if (codeNeeded) {
+                    Spacer(Modifier.height(12.dp))
+                    Row(
+                        Modifier.fillMaxWidth().background(CxPrimarySoft, MaterialTheme.shapes.small).padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Rounded.Shield, contentDescription = null, tint = CxPrimary)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.login_code_lead), style = MaterialTheme.typography.bodyMedium)
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = code,
+                        onValueChange = { code = it.take(16) },
+                        label = { Text(stringResource(if (recoveryCode) R.string.login_recovery_code else R.string.login_code)) },
+                        leadingIcon = { Icon(Icons.Rounded.Shield, contentDescription = null) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = if (recoveryCode) KeyboardType.Ascii else KeyboardType.NumberPassword,
+                            imeAction = ImeAction.Go,
+                            autoCorrectEnabled = false,
+                        ),
+                        keyboardActions = KeyboardActions(onGo = { signIn() }),
+                        modifier = Modifier.fillMaxWidth().focusRequester(codeFocus),
+                    )
+                    TextButton(onClick = { recoveryCode = !recoveryCode; code = ""; codeFocus.requestFocus() }) {
+                        Text(stringResource(if (recoveryCode) R.string.login_use_app_code else R.string.login_use_recovery_code))
+                    }
+                }
 
                 error?.let { message ->
                     Spacer(Modifier.height(12.dp))

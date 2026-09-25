@@ -1,7 +1,9 @@
 package net.levente.cloudexus.mobile.data.api
 
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -19,18 +21,27 @@ sealed class ApiException(message: String) : Exception(message) {
     /** The token is no longer valid: the user has to sign in again. */
     class Unauthorized(message: String) : ApiException(message)
 
-    /** The server answered with an error; nothing was booked. */
-    class Http(val status: Int, message: String, val details: JsonArray?) : ApiException(message) {
+    /**
+     * The server answered with an error; nothing was booked. [details] is a
+     * list for a booking's lines, an object for a sign-in.
+     */
+    class Http(val status: Int, message: String, val details: JsonElement?) : ApiException(message) {
+
+        /** The user has two-step sign-in on: the server wants the code from their app. */
+        val twoFactorRequired: Boolean
+            get() = (details as? JsonObject)?.get("two_factor_required")?.jsonPrimitive?.booleanOrNull == true
+
+        private val list: List<JsonElement> get() = (details as? JsonArray).orEmpty()
 
         /** Per-line problems of a booking, keyed by the index into items. */
-        fun lineProblems(): Map<Int, String> = details.orEmpty().mapNotNull { element ->
+        fun lineProblems(): Map<Int, String> = list.mapNotNull { element ->
             val obj = element as? JsonObject ?: return@mapNotNull null
             val index = obj["index"]?.jsonPrimitive?.intOrNull ?: return@mapNotNull null
             index to (obj["message"]?.jsonPrimitive?.contentOrNull ?: "")
         }.toMap()
 
         /** Stock shortages of a booking: product id to (available, requested). */
-        fun shortages(): Map<Int, Pair<String, String>> = details.orEmpty().mapNotNull { element ->
+        fun shortages(): Map<Int, Pair<String, String>> = list.mapNotNull { element ->
             val obj = element as? JsonObject ?: return@mapNotNull null
             val productId = obj["product_id"]?.jsonPrimitive?.intOrNull ?: return@mapNotNull null
             val available = obj["available"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null

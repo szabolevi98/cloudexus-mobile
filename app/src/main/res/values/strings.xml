@@ -32,6 +32,13 @@
     <string name="login_fields_required">Add meg a felhasználóneved és a jelszavad.</string>
     <string name="login_wrong_credentials">Hibás felhasználónév vagy jelszó.</string>
     <string name="login_throttled">Túl sok sikertelen próbálkozás. Próbáld újra 15 perc múlva.</string>
+    <string name="login_code_lead">Kétlépcsős belépés: írd be a hitelesítő alkalmazásod kódját is.</string>
+    <string name="login_code">Kód az alkalmazásból</string>
+    <string name="login_recovery_code">Helyreállító kód</string>
+    <string name="login_use_recovery_code">Helyreállító kódot írok be</string>
+    <string name="login_use_app_code">Az alkalmazás kódját írom be</string>
+    <string name="login_code_required">Írd be a kódot a hitelesítő alkalmazásból.</string>
+    <string name="login_code_wrong">Ez a kód nem jó. A kódok 30 másodpercenként változnak — az éppen látszót írd be.</string>
     <string name="login_footer">Cloudexus Mobile %1$s</string>
 
     <!-- Főmenü -->
