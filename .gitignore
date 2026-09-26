@@ -11,3 +11,6 @@ build/
 *.keystore
 *.jks
 keystore.properties
+
+# JVM crash logs
+hs_err_pid*.log
