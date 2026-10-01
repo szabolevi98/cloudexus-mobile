@@ -207,6 +207,7 @@ private fun WorkStep(state: PickingUiState, viewModel: PickingViewModel, scanner
 @Composable
 private fun PickLineCard(line: PickLine, state: PickingUiState, highlighted: Boolean, onEdit: () -> Unit) {
     val taken = state.total(line.productId)
+    val noShelf = stringResource(R.string.no_location)
     val needed = state.needed(line)
     val done = taken.compareTo(needed) == 0
     CxCard(onClick = onEdit, border = when {
@@ -224,7 +225,7 @@ private fun PickLineCard(line: PickLine, state: PickingUiState, highlighted: Boo
         Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Rounded.Inventory, contentDescription = null, tint = CxMuted, modifier = Modifier.padding(end = 6.dp))
             Text(
-                line.shelves.joinToString(" · ") { "${it.locationCode ?: "—"} (${formatQuantity(it.quantity)})" }.ifEmpty { stringResource(R.string.picking_no_stock) },
+                line.shelves.joinToString(" · ") { "${it.locationCode ?: noShelf} (${formatQuantity(it.quantity)})" }.ifEmpty { stringResource(R.string.picking_no_stock) },
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (line.shelves.isEmpty()) CxDanger else CxMuted,
                 modifier = Modifier.weight(1f),
@@ -238,7 +239,7 @@ private fun PickLineCard(line: PickLine, state: PickingUiState, highlighted: Boo
         val takenFrom = state.taken[line.productId].orEmpty()
         if (takenFrom.isNotEmpty()) {
             Text(
-                stringResource(R.string.picking_taken_from, takenFrom.joinToString(", ") { "${it.locationCode ?: "—"}: ${formatQuantity(it.amount)}" }),
+                stringResource(R.string.picking_taken_from, takenFrom.joinToString(", ") { "${it.locationCode ?: noShelf} (${formatQuantity(it.amount)})" }),
                 style = MaterialTheme.typography.bodyMedium,
                 color = CxMuted,
                 modifier = Modifier.padding(top = 2.dp),

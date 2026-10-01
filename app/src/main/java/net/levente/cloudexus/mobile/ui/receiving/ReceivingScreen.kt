@@ -63,6 +63,7 @@ import net.levente.cloudexus.mobile.ui.scan.CameraScanDialog
 import net.levente.cloudexus.mobile.ui.theme.CxDanger
 import net.levente.cloudexus.mobile.ui.theme.CxMuted
 import net.levente.cloudexus.mobile.ui.theme.CxOrange
+import net.levente.cloudexus.mobile.ui.theme.CxPrimary
 import net.levente.cloudexus.mobile.ui.theme.CxSuccess
 import net.levente.cloudexus.mobile.ui.work.AmountDialog
 import net.levente.cloudexus.mobile.ui.work.DiscardDialog
@@ -225,13 +226,14 @@ private fun WorkStep(state: ReceivingUiState, viewModel: ReceivingViewModel, sca
 @Composable
 private fun ReceiveLineCard(line: ReceiveLine, state: ReceivingUiState, highlighted: Boolean, onEdit: () -> Unit) {
     val arrived = state.arrived(line.productId)
+    val noShelf = stringResource(R.string.no_location)
     val remaining = state.remaining(line)
     val done = arrived.signum() > 0 && arrived.compareTo(remaining) == 0
     val over = arrived > remaining
     CxCard(onClick = onEdit, border = when {
         over -> CxOrange.copy(alpha = 0.7f)
         done -> CxSuccess.copy(alpha = 0.6f)
-        highlighted -> CxSuccess.copy(alpha = 0.4f)
+        highlighted -> CxPrimary.copy(alpha = 0.5f)
         else -> MaterialTheme.colorScheme.outline
     }) {
         Row(verticalAlignment = Alignment.Top) {
@@ -262,7 +264,7 @@ private fun ReceiveLineCard(line: ReceiveLine, state: ReceivingUiState, highligh
         val shelves = state.arrivals[line.productId].orEmpty()
         if (shelves.isNotEmpty()) {
             Text(
-                stringResource(R.string.receiving_put_on, shelves.joinToString(", ") { "${it.locationCode ?: "—"}: ${formatQuantity(it.amount)}" }),
+                stringResource(R.string.receiving_put_on, shelves.joinToString(", ") { "${it.locationCode ?: noShelf} (${formatQuantity(it.amount)})" }),
                 style = MaterialTheme.typography.bodyMedium,
                 color = CxMuted,
                 modifier = Modifier.padding(top = 2.dp),

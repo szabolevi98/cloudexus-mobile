@@ -193,7 +193,7 @@
     <string name="home_pending_failed">A szerver valamelyiket nem fogadta el: nézd meg.</string>
 
     <string name="mode_stocktaking">Leltár</string>
-    <string name="mode_stocktaking_subtitle">Számolás szkenneléssel, eltérések könyvelése</string>
+    <string name="mode_stocktaking_subtitle">Számolás, eltérések könyvelése</string>
     <string name="submit_stocktaking">Leltár lezárása</string>
     <string name="done_stocktaking">Leltár lekönyvelve</string>
     <string name="again_stocktaking">Új leltár</string>
@@ -218,7 +218,7 @@
     <string name="again_picking">Következő rendelés</string>
 
     <string name="mode_receiving">Beszállítói átvétel</string>
-    <string name="mode_receiving_subtitle">Beérkező rendelés átvétele és polcra tétele</string>
+    <string name="mode_receiving_subtitle">Beszerzés átvétele, polcra tétele</string>
     <string name="receiving_list_subtitle">Érkezésre váró beszerzések</string>
     <string name="receiving_empty_title">Nincs érkezésre váró rendelés</string>
     <string name="receiving_empty_text">Itt a visszaigazolt beszállítói rendelések jelennek meg, amíg nem érkezett meg minden.</string>

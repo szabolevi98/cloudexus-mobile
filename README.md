@@ -10,7 +10,7 @@ works through the Cloudexus API: a warehouse worker signs in with their own
 username, scans the shelf and the goods, and books them with one button. The
 movement shows up in the web interface at once, credited to them.
 
-![Cloudexus Mobile: the home screen, a stock-in, a stock-out short of stock, a lookup](docs/cover.png)
+![Cloudexus Mobile: the home screen, picking an order, stocktaking, a product looked up](docs/cover.png)
 
 Written in Kotlin with Jetpack Compose and Material 3, in the web app's colours.
 Runs on Android 8.0 and later.
@@ -153,6 +153,18 @@ translation.
 | Stock out, short of stock | Booked | Stock lookup |
 |---|---|---|
 | ![Stock out](docs/screenshots/stock-out-shortage.png) | ![Booked](docs/screenshots/booked.png) | ![Lookup](docs/screenshots/lookup.png) |
+
+| Shelf move | Picking | Goods receipt |
+|---|---|---|
+| ![Shelf move](docs/screenshots/relocate.png) | ![Picking](docs/screenshots/picking.png) | ![Goods receipt](docs/screenshots/receiving.png) |
+
+| Stocktaking | Stocktaking booked | My bookings today |
+|---|---|---|
+| ![Stocktaking](docs/screenshots/stocktaking.png) | ![Stocktaking booked](docs/screenshots/stocktaking-done.png) | ![My bookings today](docs/screenshots/today.png) |
+
+| Waiting to be sent |
+|---|
+| ![Waiting to be sent](docs/screenshots/outbox.png) |
 
 ## Installing it
 

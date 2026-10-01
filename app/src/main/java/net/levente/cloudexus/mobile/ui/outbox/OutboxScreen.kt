@@ -91,7 +91,7 @@ fun OutboxScreen(outbox: Outbox, onBack: () -> Unit) {
                         Row(Modifier.padding(top = 4.dp)) {
                             Spacer(Modifier.weight(1f))
                             TextButton(onClick = { discarding = item.key }) { Text(stringResource(R.string.outbox_discard), color = CxDanger) }
-                            TextButton(onClick = { outbox.retry(item.key) }) { Text(stringResource(R.string.outbox_retry)) }
+                            TextButton(onClick = { outbox.retry(item.key) }) { Text(stringResource(if (failed != null) R.string.outbox_retry else R.string.outbox_send_now)) }
                         }
                     }
                 }
