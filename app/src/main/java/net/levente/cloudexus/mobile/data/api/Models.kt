@@ -26,6 +26,7 @@ data class User(
 
     companion object {
         const val STOCK_MOVE = "stock.move"
+        const val STOCKTAKING = "stocktaking.manage"
     }
 }
 
@@ -79,6 +80,13 @@ data class Product(
     @SerialName("matched_by") val matchedBy: String = "barcode",
     @SerialName("stock_total") val stockTotal: String = "0",
     val stock: List<StockRow> = emptyList(),
+    val price: String? = null,
+    @SerialName("sale_price") val salePrice: String? = null,
+    @SerialName("vat_rate") val vatRate: String? = null,
+    @SerialName("min_stock") val minStock: String? = null,
+    /** Null from a server older than 2026-10, which did not say. */
+    @SerialName("below_min_stock") val belowMinStock: Boolean? = null,
+    @SerialName("image_url") val imageUrl: String? = null,
 )
 
 @Serializable
@@ -91,4 +99,93 @@ data class Page<T>(val data: List<T>, val meta: PageMeta)
 data class PageMeta(
     val page: Int,
     @SerialName("total_pages") val totalPages: Int,
+)
+
+
+/** One of the user's own movements of the day. */
+@Serializable
+data class MyMovement(
+    val id: Int,
+    val type: String,
+    @SerialName("warehouse_id") val warehouseId: Int,
+    @SerialName("warehouse_name") val warehouseName: String,
+    @SerialName("location_code") val locationCode: String? = null,
+    @SerialName("product_id") val productId: Int,
+    val sku: String,
+    @SerialName("product_name") val productName: String,
+    val unit: String? = null,
+    val quantity: String,
+    val note: String? = null,
+    @SerialName("created_at") val createdAt: String,
+)
+
+@Serializable
+data class Shelf(
+    @SerialName("location_id") val locationId: Int? = null,
+    @SerialName("location_code") val locationCode: String? = null,
+    val quantity: String,
+)
+
+/** A confirmed customer order waiting to be picked. */
+@Serializable
+data class PickTask(
+    val id: Int,
+    @SerialName("order_number") val orderNumber: String,
+    @SerialName("order_date") val orderDate: String? = null,
+    @SerialName("partner_name") val partnerName: String,
+    @SerialName("line_count") val lineCount: Int = 0,
+    @SerialName("total_quantity") val totalQuantity: String = "0",
+)
+
+@Serializable
+data class PickLine(
+    @SerialName("product_id") val productId: Int,
+    val sku: String,
+    val barcode: String? = null,
+    @SerialName("product_name") val productName: String,
+    val unit: String? = null,
+    val quantity: String,
+    @SerialName("in_warehouse") val inWarehouse: String = "0",
+    val shelves: List<Shelf> = emptyList(),
+)
+
+@Serializable
+data class PickOrder(
+    val id: Int,
+    @SerialName("order_number") val orderNumber: String,
+    @SerialName("partner_name") val partnerName: String,
+    val lines: List<PickLine>,
+)
+
+/** A confirmed purchase order with goods still to come. */
+@Serializable
+data class ReceiveTask(
+    val id: Int,
+    @SerialName("po_number") val poNumber: String,
+    @SerialName("order_date") val orderDate: String? = null,
+    @SerialName("partner_name") val partnerName: String,
+    @SerialName("line_count") val lineCount: Int = 0,
+    val ordered: String = "0",
+    val received: String = "0",
+    @SerialName("partly_received") val partlyReceived: Boolean = false,
+)
+
+@Serializable
+data class ReceiveLine(
+    @SerialName("product_id") val productId: Int,
+    val sku: String,
+    val barcode: String? = null,
+    @SerialName("product_name") val productName: String,
+    val unit: String? = null,
+    val ordered: String,
+    val received: String,
+    val remaining: String,
+)
+
+@Serializable
+data class ReceiveOrder(
+    val id: Int,
+    @SerialName("po_number") val poNumber: String,
+    @SerialName("partner_name") val partnerName: String,
+    val lines: List<ReceiveLine>,
 )

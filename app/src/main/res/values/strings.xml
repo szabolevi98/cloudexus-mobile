@@ -20,7 +20,7 @@
     <string name="error_forbidden">A szerepköröd ezt nem engedi. Ha szükséged van rá, kérd meg a rendszergazdát, hogy a webes felületen adja meg.</string>
 
     <!-- Bejelentkezés -->
-    <string name="login_tagline">Raktári bevét, kiadás és átadás, vonalkóddal.</string>
+    <string name="login_tagline">Raktári mozgások, leltár, kiszedés és átvétel, vonalkóddal.</string>
     <string name="login_title">Bejelentkezés</string>
     <string name="login_server">Szerver címe</string>
     <string name="login_username">Felhasználónév vagy e-mail</string>
@@ -169,5 +169,119 @@
     <plurals name="done_summary">
         <item quantity="one">%1$d tétel · %2$s</item>
         <item quantity="other">%1$d tétel · %2$s</item>
+    </plurals>
+
+    <!-- 1.1: munka közben -->
+    <string name="refresh">Frissítés</string>
+    <string name="resume_title">Folytatod?</string>
+    <string name="resume_continue">Folytatom</string>
+    <string name="resume_drop">Elvetem</string>
+    <string name="count_invalid">Nulla vagy pozitív szám, legfeljebb 3 tizedesjeggyel.</string>
+    <string name="queue_booking">Küldés később, ha lesz hálózat</string>
+    <string name="queued_title">Küldésre vár</string>
+    <string name="queued_text">A telefon elküldi, amint van hálózat. A kezdőlapon látod, ha valami még vár.</string>
+
+    <string name="mode_relocate">Átpolcozás</string>
+    <string name="mode_relocate_subtitle">Áru áttétele egyik polcról a másikra</string>
+    <string name="submit_relocate">Átpolcozás rögzítése</string>
+    <string name="done_relocate">Átpolcozás rögzítve</string>
+    <string name="again_relocate">Új átpolcozás</string>
+    <string name="pick_relocate_target_hint">Olvasd be a célpolcot is: ide kerül az áru.</string>
+
+    <string name="home_section_work">Raktári munka</string>
+    <string name="home_pending_text">A telefon elküldi, amint van hálózat.</string>
+    <string name="home_pending_failed">A szerver valamelyiket nem fogadta el: nézd meg.</string>
+
+    <string name="mode_stocktaking">Leltár</string>
+    <string name="mode_stocktaking_subtitle">Számolás szkenneléssel, eltérések könyvelése</string>
+    <string name="submit_stocktaking">Leltár lezárása</string>
+    <string name="done_stocktaking">Leltár lekönyvelve</string>
+    <string name="again_stocktaking">Új leltár</string>
+    <string name="stocktaking_empty_title">Olvasd be, amit megszámolsz</string>
+    <string name="stocktaking_empty_text">Minden beolvasás eggyel növeli a darabszámot; a számra koppintva be is írhatod. Csak a beolvasott termékek leltára változik.</string>
+    <string name="stocktaking_book_counted">Könyv szerint %1$s · számolva %2$s</string>
+
+    <string name="mode_picking">Kiszedés</string>
+    <string name="mode_picking_subtitle">Visszaigazolt rendelések összeszedése</string>
+    <string name="picking_list_subtitle">Kiszedésre váró rendelések</string>
+    <string name="picking_empty_title">Nincs kiszedendő rendelés</string>
+    <string name="picking_empty_text">Itt a visszaigazolt, még ki nem szedett vevői rendelések jelennek meg.</string>
+    <string name="picking_pick_warehouse">Melyik raktárból szeded?</string>
+    <string name="picking_shelf_auto">Polc: automatikus</string>
+    <string name="picking_no_stock">Nincs készleten ebben a raktárban</string>
+    <string name="picking_taken_from">Innen: %1$s</string>
+    <string name="pick_not_on_order">Ez nincs a rendelésen: %1$s</string>
+    <string name="pick_already_done">Ebből már megvan minden: %1$s</string>
+    <string name="submit_picking">Kiszedés rögzítése</string>
+    <string name="done_picking">Rendelés kiszedve</string>
+    <string name="done_picking_text">%1$s · %2$s. A számla már nem vonja le újra a készletet.</string>
+    <string name="again_picking">Következő rendelés</string>
+
+    <string name="mode_receiving">Beszállítói átvétel</string>
+    <string name="mode_receiving_subtitle">Beérkező rendelés átvétele és polcra tétele</string>
+    <string name="receiving_list_subtitle">Érkezésre váró beszerzések</string>
+    <string name="receiving_empty_title">Nincs érkezésre váró rendelés</string>
+    <string name="receiving_empty_text">Itt a visszaigazolt beszállítói rendelések jelennek meg, amíg nem érkezett meg minden.</string>
+    <string name="receiving_pick_warehouse">Melyik raktárba érkezik?</string>
+    <string name="receiving_partly">részben átvéve</string>
+    <string name="receiving_shelf_hint">Olvasd be a polcot, ahová az árut teszed — vagy rögzítsd polc nélkül.</string>
+    <string name="receiving_ordered_received">Rendelve %1$s · korábban átvéve %2$s</string>
+    <string name="receiving_put_on">Polcra: %1$s</string>
+    <string name="receive_not_on_order">Ez nincs a rendelésen: %1$s</string>
+    <string name="receive_over">Többet olvastál be, mint amennyi még hátravan: %1$s</string>
+    <string name="submit_receiving">Átvétel rögzítése</string>
+    <string name="done_receiving">Átvétel rögzítve</string>
+    <string name="done_receiving_text">%1$s · %2$s. A bejövő számla már nem veszi be újra a készletet.</string>
+    <string name="again_receiving">Következő átvétel</string>
+
+    <string name="today_title">Mai könyveléseim</string>
+    <string name="today_subtitle">Amit ma rögzítettél, a legújabb elöl</string>
+    <string name="today_empty_title">Ma még nem könyveltél</string>
+    <string name="today_empty_text">Itt látod majd minden mai bevételed, kiadásod és átadásod.</string>
+
+    <string name="outbox_title">Küldésre vár</string>
+    <string name="outbox_subtitle">Hálózat nélkül rögzített könyvelések</string>
+    <string name="outbox_empty_title">Minden elküldve</string>
+    <string name="outbox_empty_text">Ami hálózat nélkül készül, itt vár, amíg a telefon el nem tudja küldeni.</string>
+    <string name="outbox_waiting">Vár a hálózatra; magától elmegy.</string>
+    <string name="outbox_send_now">Küldés most</string>
+    <string name="outbox_retry">Újraküldés</string>
+    <string name="outbox_discard">Elvetés</string>
+    <string name="outbox_discard_title">Elveted ezt a könyvelést?</string>
+    <string name="outbox_discard_text">Nem kerül a rendszerbe, és nem lehet visszahozni.</string>
+
+    <string name="lookup_net_price">Nettó ár</string>
+    <string name="lookup_gross_price">Bruttó (ÁFA %1$s%%)</string>
+    <string name="lookup_below_min">A minimum készlet alatt van</string>
+    <string name="lookup_below_min_of">A minimum készlet (%1$s %2$s) alatt van</string>
+
+    <string name="settings_work">Munka</string>
+    <string name="settings_warehouse">Raktár ezen az eszközön</string>
+    <string name="settings_warehouse_hint">Ha a PDA mindig ugyanabban a raktárban dolgozik, válaszd ki: minden munka ebben indul, nem kérdez rá.</string>
+    <string name="settings_warehouse_last">Az utoljára használt</string>
+    <string name="settings_warehouse_fixed">Mindig: %1$s</string>
+    <string name="settings_warehouse_offline">A raktárak listája most nem érhető el.</string>
+    <string name="settings_sound">Hangjelzés beolvasáskor</string>
+    <string name="settings_sound_hint">A rezgés kikapcsolt hangnál is megmarad.</string>
+
+    <plurals name="resume_text">
+        <item quantity="one">Van egy félbehagyott munkád (%2$s, %1$d tétel). Folytatod, vagy elveted?</item>
+        <item quantity="other">Van egy félbehagyott munkád (%2$s, %1$d tétel). Folytatod, vagy elveted?</item>
+    </plurals>
+    <plurals name="counted_products">
+        <item quantity="one">%1$d termék megszámolva</item>
+        <item quantity="other">%1$d termék megszámolva</item>
+    </plurals>
+    <plurals name="stocktaking_summary">
+        <item quantity="one">%1$s · %2$d terméknél volt eltérés</item>
+        <item quantity="other">%1$s · %2$d terméknél volt eltérés</item>
+    </plurals>
+    <plurals name="home_pending">
+        <item quantity="one">%1$d könyvelés küldésre vár</item>
+        <item quantity="other">%1$d könyvelés küldésre vár</item>
+    </plurals>
+    <plurals name="sign_out_pending">
+        <item quantity="one">%1$d könyvelés még nincs elküldve. Kijelentkezés után ott marad, és csak akkor megy el, ha újra bejelentkezel ezzel a fiókkal. Kijelentkezel?</item>
+        <item quantity="other">%1$d könyvelés még nincs elküldve. Kijelentkezés után ott maradnak, és csak akkor mennek el, ha újra bejelentkezel ezzel a fiókkal. Kijelentkezel?</item>
     </plurals>
 </resources>

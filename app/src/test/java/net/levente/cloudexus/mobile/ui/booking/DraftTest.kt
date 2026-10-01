@@ -104,6 +104,22 @@ class DraftTest {
     }
 
     @Test
+    fun `shelf move body names one warehouse and both shelves per line`() {
+        val body = Draft().add(monitor, shelfA, shelfB).add(paper, null, shelfA).requestBody(BookingMode.RELOCATE, central, null, "")
+
+        assertEquals(1, body["warehouse_id"]!!.jsonPrimitive.int)
+        assertFalse(body.containsKey("to_warehouse_id"))
+        val items = body["items"] as JsonArray
+        val paperLine = items[0] as JsonObject
+        assertEquals(JsonNull, paperLine["from_location_id"])
+        assertEquals(24, paperLine["to_location_id"]!!.jsonPrimitive.int)
+        val monitorLine = items[1] as JsonObject
+        assertEquals(24, monitorLine["from_location_id"]!!.jsonPrimitive.int)
+        assertEquals(18, monitorLine["to_location_id"]!!.jsonPrimitive.int)
+        assertFalse(monitorLine.containsKey("location_id"))
+    }
+
+    @Test
     fun `quantities parse with comma or dot, positive, at most three decimals`() {
         assertEquals(BigDecimal("1.5"), parseQuantity("1,5"))
         assertEquals(BigDecimal("2.125"), parseQuantity(" 2.125 "))

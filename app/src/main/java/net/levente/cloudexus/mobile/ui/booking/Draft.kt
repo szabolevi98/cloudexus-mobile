@@ -19,12 +19,15 @@ enum class BookingMode(val path: String) {
     IN("stock/in"),
     OUT("stock/out"),
     TRANSFER("stock/transfer"),
+
+    /** Shelf to shelf within one warehouse. */
+    RELOCATE("stock/relocate"),
 }
 
 /**
  * One line of a booking being collected. [from] is the location of a stock-in
- * or stock-out line, and the source location of a transfer; [to] is only used
- * by transfers.
+ * or stock-out line, and the source location of a transfer or a relocation;
+ * [to] is only used by those two.
  */
 data class DraftLine(
     val productId: Int,
@@ -97,7 +100,7 @@ data class Draft(val lines: List<DraftLine> = emptyList()) {
                     add(buildJsonObject {
                         put("product_id", line.productId)
                         put("quantity", line.quantity.toPlainString())
-                        if (mode == BookingMode.TRANSFER) {
+                        if (mode == BookingMode.TRANSFER || mode == BookingMode.RELOCATE) {
                             put("from_location_id", line.from?.id?.let(::JsonPrimitive) ?: JsonNull)
                             put("to_location_id", line.to?.id?.let(::JsonPrimitive) ?: JsonNull)
                         } else {

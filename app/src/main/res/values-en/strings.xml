@@ -14,7 +14,7 @@
     <string name="error_server">The server reported an error: %1$s</string>
     <string name="error_forbidden">Your role does not allow this. If you need it, ask an administrator to grant it in the web app.</string>
 
-    <string name="login_tagline">Stock in, stock out and transfers, by barcode.</string>
+    <string name="login_tagline">Stock movements, stocktaking, picking and receiving, by barcode.</string>
     <string name="login_title">Sign in</string>
     <string name="login_server">Server address</string>
     <string name="login_username">Username or e-mail</string>
@@ -155,5 +155,119 @@
     <plurals name="done_summary">
         <item quantity="one">%1$d item · %2$s</item>
         <item quantity="other">%1$d items · %2$s</item>
+    </plurals>
+
+    <!-- 1.1: at work -->
+    <string name="refresh">Refresh</string>
+    <string name="resume_title">Carry on?</string>
+    <string name="resume_continue">Carry on</string>
+    <string name="resume_drop">Discard</string>
+    <string name="count_invalid">Zero or a positive number, up to 3 decimals.</string>
+    <string name="queue_booking">Send later, when there is a network</string>
+    <string name="queued_title">Waiting to be sent</string>
+    <string name="queued_text">The phone sends it as soon as there is a network. The home screen shows if anything is still waiting.</string>
+
+    <string name="mode_relocate">Shelf move</string>
+    <string name="mode_relocate_subtitle">Move goods from one shelf to another</string>
+    <string name="submit_relocate">Book shelf move</string>
+    <string name="done_relocate">Shelf move booked</string>
+    <string name="again_relocate">New shelf move</string>
+    <string name="pick_relocate_target_hint">Scan the target shelf too: the goods go there.</string>
+
+    <string name="home_section_work">Warehouse work</string>
+    <string name="home_pending_text">The phone sends them as soon as there is a network.</string>
+    <string name="home_pending_failed">The server refused one of them: have a look.</string>
+
+    <string name="mode_stocktaking">Stocktaking</string>
+    <string name="mode_stocktaking_subtitle">Count by scanning, book the differences</string>
+    <string name="submit_stocktaking">Close stocktaking</string>
+    <string name="done_stocktaking">Stocktaking booked</string>
+    <string name="again_stocktaking">New stocktaking</string>
+    <string name="stocktaking_empty_title">Scan what you count</string>
+    <string name="stocktaking_empty_text">Every scan adds one; tap the number to type it. Only the scanned products are counted.</string>
+    <string name="stocktaking_book_counted">Book %1$s · counted %2$s</string>
+
+    <string name="mode_picking">Picking</string>
+    <string name="mode_picking_subtitle">Pick confirmed customer orders</string>
+    <string name="picking_list_subtitle">Orders waiting to be picked</string>
+    <string name="picking_empty_title">Nothing to pick</string>
+    <string name="picking_empty_text">Confirmed customer orders that are not picked yet show up here.</string>
+    <string name="picking_pick_warehouse">Which warehouse do you pick from?</string>
+    <string name="picking_shelf_auto">Shelf: automatic</string>
+    <string name="picking_no_stock">Not in stock in this warehouse</string>
+    <string name="picking_taken_from">From: %1$s</string>
+    <string name="pick_not_on_order">Not on the order: %1$s</string>
+    <string name="pick_already_done">All of it is picked already: %1$s</string>
+    <string name="submit_picking">Book picking</string>
+    <string name="done_picking">Order picked</string>
+    <string name="done_picking_text">%1$s · %2$s. The invoice will not take the stock again.</string>
+    <string name="again_picking">Next order</string>
+
+    <string name="mode_receiving">Goods receipt</string>
+    <string name="mode_receiving_subtitle">Receive a purchase order and shelve it</string>
+    <string name="receiving_list_subtitle">Purchase orders still to arrive</string>
+    <string name="receiving_empty_title">Nothing to receive</string>
+    <string name="receiving_empty_text">Confirmed purchase orders show up here until all of it has arrived.</string>
+    <string name="receiving_pick_warehouse">Which warehouse does it arrive at?</string>
+    <string name="receiving_partly">partly received</string>
+    <string name="receiving_shelf_hint">Scan the shelf you put the goods on — or book without a shelf.</string>
+    <string name="receiving_ordered_received">Ordered %1$s · received before %2$s</string>
+    <string name="receiving_put_on">On shelf: %1$s</string>
+    <string name="receive_not_on_order">Not on the order: %1$s</string>
+    <string name="receive_over">More scanned than is still to come: %1$s</string>
+    <string name="submit_receiving">Book receipt</string>
+    <string name="done_receiving">Receipt booked</string>
+    <string name="done_receiving_text">%1$s · %2$s. The incoming invoice will not add the stock again.</string>
+    <string name="again_receiving">Next receipt</string>
+
+    <string name="today_title">My bookings today</string>
+    <string name="today_subtitle">What you booked today, newest first</string>
+    <string name="today_empty_title">No bookings yet today</string>
+    <string name="today_empty_text">Every stock in, out and transfer you book today shows up here.</string>
+
+    <string name="outbox_title">Waiting to be sent</string>
+    <string name="outbox_subtitle">Bookings made without a network</string>
+    <string name="outbox_empty_title">Everything is sent</string>
+    <string name="outbox_empty_text">What is booked without a network waits here until the phone can send it.</string>
+    <string name="outbox_waiting">Waiting for the network; it goes by itself.</string>
+    <string name="outbox_send_now">Send now</string>
+    <string name="outbox_retry">Send again</string>
+    <string name="outbox_discard">Discard</string>
+    <string name="outbox_discard_title">Discard this booking?</string>
+    <string name="outbox_discard_text">It will not reach the system, and cannot be brought back.</string>
+
+    <string name="lookup_net_price">Net price</string>
+    <string name="lookup_gross_price">Gross (VAT %1$s%%)</string>
+    <string name="lookup_below_min">Below the minimum stock</string>
+    <string name="lookup_below_min_of">Below the minimum stock (%1$s %2$s)</string>
+
+    <string name="settings_work">Work</string>
+    <string name="settings_warehouse">Warehouse on this device</string>
+    <string name="settings_warehouse_hint">If the PDA always works in the same warehouse, choose it: every job starts there without asking.</string>
+    <string name="settings_warehouse_last">The last one used</string>
+    <string name="settings_warehouse_fixed">Always: %1$s</string>
+    <string name="settings_warehouse_offline">The list of warehouses is not available now.</string>
+    <string name="settings_sound">Beep on a scan</string>
+    <string name="settings_sound_hint">The buzz stays with the sound off.</string>
+
+    <plurals name="resume_text">
+        <item quantity="one">There is unfinished work (%2$s, %1$d line). Carry on or discard it?</item>
+        <item quantity="other">There is unfinished work (%2$s, %1$d lines). Carry on or discard it?</item>
+    </plurals>
+    <plurals name="counted_products">
+        <item quantity="one">%1$d product counted</item>
+        <item quantity="other">%1$d products counted</item>
+    </plurals>
+    <plurals name="stocktaking_summary">
+        <item quantity="one">%1$s · %2$d product differed</item>
+        <item quantity="other">%1$s · %2$d products differed</item>
+    </plurals>
+    <plurals name="home_pending">
+        <item quantity="one">%1$d booking waiting to be sent</item>
+        <item quantity="other">%1$d bookings waiting to be sent</item>
+    </plurals>
+    <plurals name="sign_out_pending">
+        <item quantity="one">%1$d booking is not sent yet. It stays after signing out, and goes only when you sign in with this account again. Sign out?</item>
+        <item quantity="other">%1$d bookings are not sent yet. They stay after signing out, and go only when you sign in with this account again. Sign out?</item>
     </plurals>
 </resources>

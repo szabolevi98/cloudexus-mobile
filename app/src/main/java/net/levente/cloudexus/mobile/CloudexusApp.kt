@@ -12,6 +12,8 @@ import net.levente.cloudexus.mobile.data.scanner.ScannerSettings
 import net.levente.cloudexus.mobile.data.session.SessionManager
 import net.levente.cloudexus.mobile.data.session.SessionStore
 import net.levente.cloudexus.mobile.data.session.TokenCipher
+import net.levente.cloudexus.mobile.data.work.Outbox
+import net.levente.cloudexus.mobile.data.work.WorkStore
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
@@ -21,7 +23,7 @@ private val Context.dataStore by preferencesDataStore(name = "cloudexus")
 class AppContainer(context: Context) {
     val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
 
-    private val http = OkHttpClient.Builder()
+    val http: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(20, TimeUnit.SECONDS)
         .writeTimeout(20, TimeUnit.SECONDS)
@@ -33,6 +35,8 @@ class AppContainer(context: Context) {
     val api = ApiClient(http, json)
     val sessions = SessionManager(SessionStore(context.dataStore, TokenCipher(), json), api, appScope)
     val scannerSettings = ScannerSettings(context.dataStore)
+    val work = WorkStore(context.dataStore)
+    val outbox = Outbox(context.applicationContext, context.dataStore, api, sessions, json, appScope)
 }
 
 class CloudexusApp : Application() {

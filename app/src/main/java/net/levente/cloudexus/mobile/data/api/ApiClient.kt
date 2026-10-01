@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -88,6 +89,34 @@ class ApiClient(private val http: OkHttpClient, private val json: Json) {
             .build()
         return execute(request, BookingReceipt.serializer())
     }
+
+    /**
+     * Any change, with its Idempotency-Key: what the queue of bookings made
+     * without a network sends when it comes back. Returns the answer's data.
+     */
+    suspend fun post(connection: Connection, path: String, body: JsonObject, idempotencyKey: String): JsonObject {
+        val request = authorized(connection, path, emptyMap())
+            .header("Idempotency-Key", idempotencyKey)
+            .post(body.toString().toRequestBody(JSON))
+            .build()
+        return execute(request, JsonObject.serializer())
+    }
+
+    /** The user's own movements of a day (default today), newest first. */
+    suspend fun myMovements(connection: Connection, date: String? = null): List<MyMovement> =
+        allPages(connection, "stock/movements", if (date != null) mapOf("date" to date) else emptyMap(), MyMovement.serializer())
+
+    suspend fun pickTasks(connection: Connection): List<PickTask> =
+        get(connection, "picking", emptyMap(), Envelope.serializer(ListSerializer(PickTask.serializer()))).data
+
+    suspend fun pickOrder(connection: Connection, orderId: Int, warehouseId: Int): PickOrder =
+        get(connection, "picking/$orderId", mapOf("warehouse_id" to "$warehouseId"), Envelope.serializer(PickOrder.serializer())).data
+
+    suspend fun receiveTasks(connection: Connection): List<ReceiveTask> =
+        get(connection, "receiving", emptyMap(), Envelope.serializer(ListSerializer(ReceiveTask.serializer()))).data
+
+    suspend fun receiveOrder(connection: Connection, orderId: Int): ReceiveOrder =
+        get(connection, "receiving/$orderId", emptyMap(), Envelope.serializer(ReceiveOrder.serializer())).data
 
     private suspend fun <T> get(connection: Connection, path: String, query: Map<String, String>, serializer: KSerializer<T>): T =
         execute(authorized(connection, path, query).get().build(), serializer)
@@ -198,6 +227,8 @@ data class BookingReceipt(val data: BookingReceiptData)
 data class BookingReceiptData(
     val movements: List<JsonObject> = emptyList(),
     val transfers: List<JsonObject> = emptyList(),
+    val moves: List<JsonObject> = emptyList(),
+    val items: List<JsonObject> = emptyList(),
 ) {
-    val lineCount: Int get() = movements.size + transfers.size
+    val lineCount: Int get() = movements.size + transfers.size + moves.size + items.size
 }

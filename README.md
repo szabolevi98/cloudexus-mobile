@@ -1,7 +1,7 @@
 # Cloudexus Mobile
 
-Stock in, stock out and transfers between warehouses, by barcode, on a phone or
-a handheld scanner.
+Stock in, stock out, transfers, shelf moves, stocktaking, picking and goods
+receipt, by barcode, on a phone or a handheld scanner.
 
 The Android app of the [Cloudexus](https://github.com/szabolevi98/cloudexus)
 business management system, for the people in the warehouse. The web interface
@@ -22,6 +22,18 @@ Runs on Android 8.0 and later.
 - **Stock in, stock out and transfers**: choose the warehouse (for a transfer,
   where from and where to), scan the lines, book. A booking carries any number of
   lines, and either all of them are booked or none is.
+- **Shelf moves** within a warehouse: the source shelf, the target shelf, the
+  goods — or the source, the goods and then the target. The source shelf must
+  hold what is moved.
+- **The warehouse is remembered**: a PDA usually stays in one warehouse, so the
+  work starts in the last one used, or — set in Settings — always in the same
+  one, without asking. The last shelf is remembered too.
+- **Nothing is lost**: the list being scanned is kept on the device; after the
+  app is closed, the battery runs out or the phone restarts, it offers to carry
+  on where it was left.
+- **Sound and buzz**: a short beep for a good scan, a double one for a warning
+  (more than in stock, more than ordered), a low one for an error. The sound can
+  be switched off; the buzz stays.
 - **Shelf labels**: a scanned shelf code sets the location for the lines that
   follow, so a worker simply walks the shelves — shelf, item, item, next shelf.
   The shelf can also be picked from a list.
@@ -33,6 +45,25 @@ Runs on Android 8.0 and later.
 - **Errors where they belong**: when the server refuses a booking — short of
   stock, say — the reason is shown on the line it is about ("135 in stock, 150
   asked for").
+
+### Warehouse work
+
+- **Stocktaking**: scan what is on the shelves — every scan counts one, a tap
+  types the number — and close it: the server books the differences against
+  the book stock, exactly like a stocktaking closed on the web, and the app
+  lists what differed. Only the products scanned are counted. Needs the
+  *stocktaking* permission.
+- **Picking**: the confirmed customer orders not picked yet; open one, and the
+  lines show which shelves hold the goods. Scanning a product takes it from the
+  scanned shelf, or from the first one with some left. When every line is
+  picked, one button books the stock out with the order's number — and the
+  invoice made from the order later does not take the stock again.
+- **Goods receipt**: the confirmed purchase orders still to arrive, with what
+  was ordered and what has arrived before. Scan the shelf, then the goods; more
+  or less than ordered is fine (a short delivery stays open for the rest). The
+  incoming invoice later does not add the stock again.
+- **My bookings today**: everything the signed-in user booked today, grouped by
+  booking, to check something went through or to look back on the shift.
 
 ### Built for bad Wi-Fi
 
@@ -46,13 +77,20 @@ booking is sent with an
 - sending again uses the same key, so the server does not book a booking twice,
   it answers with its first answer;
 - two scanners booking out the last piece at the same moment cannot both have
-  it: the server queues bookings per warehouse.
+  it: the server queues bookings per warehouse;
+- with no network at all, **Send later** puts the booking in a queue on the
+  device. It goes by itself when the network is back — with the same key, so
+  never twice — and the home screen shows what is still waiting. A booking the
+  server refuses by then (short of stock, say) stays in the queue with the
+  reason, to be sent again or thrown away.
 
 ### Stock lookup
 
 Anything can be scanned without booking it: the app shows how much of it is in
-which warehouse and on which shelf. A shelf with negative stock is shown in red
-(more was booked out of it than into it).
+which warehouse and on which shelf, its picture, its net and gross price (the
+sale price when there is one), and a warning when it is below its minimum
+stock. A shelf with negative stock is shown in red (more was booked out of it
+than into it).
 
 ### Barcode scanners
 
@@ -80,7 +118,8 @@ UPC, Code 128, QR and the other common formats).
 
 Cloudexus gives every user a role, and the app follows it. A role that may not
 book stock movements sees, in place of stock in, out and transfer, why not and
-who can change it; stock lookup stays. The server checks every booking anyway: a
+who can change it; stock lookup stays. Picking and goods receipt need stock
+moves too, stocktaking its own permission. The server checks every booking anyway: a
 role changed on the web shows in the app after the first booking it refuses, or
 the next time the app starts.
 
@@ -129,7 +168,10 @@ It needs **Android 8.0 (API 26)** or later, and a Cloudexus server with the
 mobile endpoints (`/api/auth/*`, `/api/products/lookup`,
 `/api/stock/in|out|transfer`) — any version from 22 September 2026 on, with
 `php database/migrate.php` run. The roles need a version from 24 September 2026;
-with an older one the app hides nothing.
+with an older one the app hides nothing. Shelf moves, stocktaking, picking,
+goods receipt and *My bookings today* need a version from 1 October 2026
+(`/api/stock/relocate`, `/api/stocktakings`, `/api/picking`, `/api/receiving`,
+`/api/stock/movements`).
 
 ## Building it
 
@@ -170,7 +212,11 @@ app/src/main/java/net/levente/cloudexus/mobile/
   data/api/        the Cloudexus API client, its models and errors
   data/session/    sign-in, the encrypted token, expiry
   data/scanner/    scanner types (broadcast intents) and receiving scans
-  ui/booking/      stock in, out and transfer: the list's logic (Draft) and the screen
+  data/work/       the remembered warehouse, shelf and unfinished lists; the offline queue
+  ui/booking/      stock in, out, transfer and shelf move: the list's logic (Draft) and the screen
+  ui/stocktaking/, ui/picking/, ui/receiving/   warehouse work
+  ui/work/         what the warehouse work screens share: dialogs, the submit bar
+  ui/today/, ui/outbox/   my bookings today, the queue of bookings waiting to be sent
   ui/lookup/       stock lookup
   ui/login/, ui/home/, ui/settings/, ui/scan/ (the camera)
   ui/components/   shared pieces: header, card, scan field, quantity stepper

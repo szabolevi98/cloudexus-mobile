@@ -26,5 +26,10 @@ val CxWarningSoft = Color(0xFFFCF3E3)
 val CxDanger = Color(0xFFE0526A)
 val CxDangerSoft = Color(0xFFFCE8EC)
 
+// The warehouse work beside the bookings: relocation, stocktaking, picking, receiving.
+val CxTeal = Color(0xFF1E9AAE)
+val CxViolet = Color(0xFF8A5CD6)
+val CxOrange = Color(0xFFE07A3A)
+
 /** The sidebar gradient of the web app, used for screen headers. */
 val CxNavyGradient = Brush.linearGradient(listOf(CxNavyFrom, CxNavyTo))

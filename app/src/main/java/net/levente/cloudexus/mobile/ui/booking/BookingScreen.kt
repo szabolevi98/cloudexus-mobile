@@ -1,7 +1,5 @@
 package net.levente.cloudexus.mobile.ui.booking
 
-import android.media.AudioManager
-import android.media.ToneGenerator
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -44,7 +42,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,8 +51,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -85,6 +80,7 @@ import net.levente.cloudexus.mobile.ui.components.IconTile
 import net.levente.cloudexus.mobile.ui.components.Pill
 import net.levente.cloudexus.mobile.ui.components.QuantityStepper
 import net.levente.cloudexus.mobile.ui.components.ScanField
+import net.levente.cloudexus.mobile.ui.components.ScanSignals
 import net.levente.cloudexus.mobile.ui.components.SectionLabel
 import net.levente.cloudexus.mobile.ui.scan.CameraScanDialog
 import net.levente.cloudexus.mobile.ui.theme.CxDanger
@@ -97,7 +93,17 @@ import java.math.BigDecimal
 @Composable
 fun BookingScreen(viewModel: BookingViewModel, scanner: ScannerConfig, onExit: () -> Unit) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    ScanSignals(viewModel)
+    ScanSignals(viewModel.signals, state.sound)
+
+    state.resume?.let { saved ->
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(R.string.resume_title)) },
+            text = { Text(pluralStringResource(R.plurals.resume_text, saved.lines.size, saved.lines.size, stringResource(state.mode.style.title))) },
+            confirmButton = { TextButton(onClick = viewModel::resumeSaved) { Text(stringResource(R.string.resume_continue)) } },
+            dismissButton = { TextButton(onClick = viewModel::dropSaved) { Text(stringResource(R.string.resume_drop), color = CxDanger) } },
+        )
+    }
 
     when (state.step) {
         BookingStep.WAREHOUSE -> {
@@ -130,24 +136,6 @@ fun BookingScreen(viewModel: BookingViewModel, scanner: ScannerConfig, onExit: (
     }
 }
 
-/** A short beep and a tick for a taken scan, a low tone and a buzz for a rejected one: the worker is looking at the goods, not the screen. */
-@Composable
-private fun ScanSignals(viewModel: BookingViewModel) {
-    val haptics = LocalHapticFeedback.current
-    val tones = remember { runCatching { ToneGenerator(AudioManager.STREAM_NOTIFICATION, 70) }.getOrNull() }
-    DisposableEffect(tones) { onDispose { tones?.release() } }
-
-    LaunchedEffect(viewModel) {
-        viewModel.events.collect { event ->
-            when (event) {
-                is BookingEvent.Scanned -> {
-                    haptics.performHapticFeedback(if (event.ok) HapticFeedbackType.TextHandleMove else HapticFeedbackType.LongPress)
-                    tones?.startTone(if (event.ok) ToneGenerator.TONE_PROP_BEEP else ToneGenerator.TONE_PROP_NACK, if (event.ok) 90 else 250)
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun WarehouseStep(
@@ -237,7 +225,7 @@ private fun ScanStep(state: BookingUiState, viewModel: BookingViewModel, scanner
                     onClick = { pickLocation = false },
                     modifier = Modifier.weight(1f, fill = false),
                 )
-                if (state.mode == BookingMode.TRANSFER) {
+                if (state.hasTarget) {
                     Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null, tint = Color.White, modifier = Modifier.align(Alignment.CenterVertically))
                     Pill(
                         text = state.toLocation?.code ?: stringResource(R.string.no_location),
@@ -294,11 +282,14 @@ private fun ScanStep(state: BookingUiState, viewModel: BookingViewModel, scanner
             }
         }
 
+        val queueTitle = listOfNotNull(stringResource(state.mode.style.title), state.warehouse?.name).joinToString(" · ")
+        val queueSummary = pluralStringResource(R.plurals.lines_count, state.draft.lines.size, state.draft.lines.size)
         BottomBar(
             state = state,
             onSubmit = viewModel::submit,
             onUnlock = viewModel::unlockAfterUncertain,
             onNote = { editNote = true },
+            onQueue = { viewModel.queue(queueTitle, queueSummary) },
         )
     }
 
@@ -307,14 +298,20 @@ private fun ScanStep(state: BookingUiState, viewModel: BookingViewModel, scanner
             onDismissRequest = { confirmDiscard = false },
             title = { Text(stringResource(R.string.discard_title)) },
             text = { Text(pluralStringResource(R.plurals.discard_text, state.draft.lines.size, state.draft.lines.size)) },
-            confirmButton = { TextButton(onClick = { confirmDiscard = false; onExit() }) { Text(stringResource(R.string.discard_confirm), color = CxDanger) } },
+            confirmButton = { TextButton(onClick = { confirmDiscard = false; viewModel.discard(); onExit() }) { Text(stringResource(R.string.discard_confirm), color = CxDanger) } },
             dismissButton = { TextButton(onClick = { confirmDiscard = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 
     pickLocation?.let { target ->
         LocationPicker(
-            hint = stringResource(if (target) R.string.pick_target_location_hint else R.string.pick_location_hint),
+            hint = stringResource(
+                when {
+                    target && state.mode == BookingMode.RELOCATE -> R.string.pick_relocate_target_hint
+                    target -> R.string.pick_target_location_hint
+                    else -> R.string.pick_location_hint
+                },
+            ),
             locations = if (target) state.toLocations else state.locations,
             selected = if (target) state.toLocation else state.location,
             onPick = { location ->
@@ -444,7 +441,7 @@ private fun LineCard(
             Column(Modifier.weight(1f)) {
                 Text(line.name, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 val where = when (mode) {
-                    BookingMode.TRANSFER -> "${line.from?.code ?: "—"} → ${line.to?.code ?: "—"}"
+                    BookingMode.TRANSFER, BookingMode.RELOCATE -> "${line.from?.code ?: "—"} → ${line.to?.code ?: "—"}"
                     else -> line.from?.code ?: stringResource(R.string.no_location)
                 }
                 Text("${line.sku} · $where", style = MaterialTheme.typography.bodyMedium, color = CxMuted)
@@ -470,7 +467,7 @@ private fun LineCard(
 }
 
 @Composable
-private fun BottomBar(state: BookingUiState, onSubmit: () -> Unit, onUnlock: () -> Unit, onNote: () -> Unit) {
+private fun BottomBar(state: BookingUiState, onSubmit: () -> Unit, onUnlock: () -> Unit, onNote: () -> Unit, onQueue: () -> Unit) {
     val style = state.mode.style
     Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 12.dp) {
         Column(Modifier.navigationBarsPadding().padding(horizontal = 16.dp, vertical = 12.dp)) {
@@ -481,6 +478,15 @@ private fun BottomBar(state: BookingUiState, onSubmit: () -> Unit, onUnlock: () 
                     loading = state.submitting,
                     color = style.color,
                     icon = Icons.Rounded.Refresh,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(8.dp))
+                CxButton(
+                    text = stringResource(R.string.queue_booking),
+                    onClick = onQueue,
+                    enabled = !state.submitting,
+                    color = CxMuted,
+                    icon = Icons.Rounded.CloudOff,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 TextButton(onClick = onUnlock, enabled = !state.submitting, modifier = Modifier.fillMaxWidth()) {
@@ -526,9 +532,13 @@ private fun DoneStep(state: BookingUiState, onAgain: () -> Unit, onExit: () -> U
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = style.color, modifier = Modifier.size(96.dp))
+            Icon(if (state.queued) Icons.Rounded.CloudOff else Icons.Rounded.CheckCircle, contentDescription = null, tint = if (state.queued) CxWarning else style.color, modifier = Modifier.size(96.dp))
             Spacer(Modifier.height(20.dp))
-            Text(stringResource(style.done), style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
+            Text(stringResource(if (state.queued) R.string.queued_title else style.done), style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
+            if (state.queued) {
+                Spacer(Modifier.height(8.dp))
+                Text(stringResource(R.string.queued_text), style = MaterialTheme.typography.bodyLarge, color = CxMuted, textAlign = TextAlign.Center)
+            }
             Spacer(Modifier.height(8.dp))
             val where = if (state.mode == BookingMode.TRANSFER) "${state.warehouse?.name} → ${state.toWarehouse?.name}" else state.warehouse?.name.orEmpty()
             Text(

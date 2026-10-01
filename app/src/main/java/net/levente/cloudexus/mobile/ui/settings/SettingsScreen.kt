@@ -14,37 +14,51 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.Logout
+import androidx.compose.material.icons.automirrored.rounded.VolumeOff
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Warehouse
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import net.levente.cloudexus.mobile.BuildConfig
 import net.levente.cloudexus.mobile.R
+import net.levente.cloudexus.mobile.data.api.ApiClient
+import net.levente.cloudexus.mobile.data.api.Warehouse
 import net.levente.cloudexus.mobile.data.scanner.ScannerBroadcastEffect
 import net.levente.cloudexus.mobile.data.scanner.ScannerConfig
 import net.levente.cloudexus.mobile.data.scanner.ScannerPreset
 import net.levente.cloudexus.mobile.data.scanner.ScannerSettings
 import net.levente.cloudexus.mobile.data.session.Session
+import net.levente.cloudexus.mobile.data.work.WorkPrefs
+import net.levente.cloudexus.mobile.data.work.WorkStore
 import net.levente.cloudexus.mobile.ui.components.CxButton
 import net.levente.cloudexus.mobile.ui.components.CxCard
 import net.levente.cloudexus.mobile.ui.components.CxHeader
@@ -61,12 +75,23 @@ fun SettingsScreen(
     session: Session,
     config: ScannerConfig,
     settings: ScannerSettings,
+    work: WorkStore,
+    api: ApiClient,
+    pending: Int,
     onSignOut: () -> Unit,
     onBack: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     var lastScan by rememberSaveable { mutableStateOf<String?>(null) }
     var confirmSignOut by rememberSaveable { mutableStateOf(false) }
+    var choosingWarehouse by rememberSaveable { mutableStateOf(false) }
+    var warehouses by remember { mutableStateOf<List<Warehouse>?>(null) }
+    val prefs by remember(session.baseUrl) { work.prefs(session.baseUrl) }.collectAsStateWithLifecycle(WorkPrefs())
+
+    // The names, for the fixed warehouse; without a network only its number shows.
+    LaunchedEffect(session.baseUrl) {
+        warehouses = runCatching { api.warehouses(session.connection()) }.getOrNull()
+    }
     fun save(new: ScannerConfig) = scope.launch { settings.save(new) }
 
     ScannerBroadcastEffect(config) { lastScan = it }
@@ -99,6 +124,39 @@ fun SettingsScreen(
                     icon = Icons.AutoMirrored.Rounded.Logout,
                     modifier = Modifier.fillMaxWidth(),
                 )
+            }
+
+            SectionLabel(stringResource(R.string.settings_work), Modifier.padding(start = 4.dp, top = 8.dp))
+            CxCard(onClick = { choosingWarehouse = true }) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconTile(Icons.Rounded.Warehouse, CxPrimary, soft = true)
+                    Spacer(Modifier.width(14.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.settings_warehouse), style = MaterialTheme.typography.titleMedium)
+                        val fixed = prefs.fixedWarehouseId
+                        val name = fixed?.let { id -> warehouses?.firstOrNull { it.id == id }?.name ?: "#$id" }
+                        Text(
+                            if (name != null) stringResource(R.string.settings_warehouse_fixed, name) else stringResource(R.string.settings_warehouse_last),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = CxMuted,
+                        )
+                    }
+                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null, tint = CxMuted)
+                }
+            }
+            CxCard {
+                Row(
+                    Modifier.fillMaxWidth().toggleable(value = prefs.sound, role = Role.Switch) { on -> scope.launch { work.setSound(on) } },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconTile(if (prefs.sound) Icons.AutoMirrored.Rounded.VolumeUp else Icons.AutoMirrored.Rounded.VolumeOff, CxPrimary, soft = true)
+                    Spacer(Modifier.width(14.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.settings_sound), style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.settings_sound_hint), style = MaterialTheme.typography.bodyMedium, color = CxMuted)
+                    }
+                    Switch(checked = prefs.sound, onCheckedChange = null)
+                }
             }
 
             SectionLabel(stringResource(R.string.settings_scanner), Modifier.padding(start = 4.dp, top = 8.dp))
@@ -178,9 +236,49 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { confirmSignOut = false },
             title = { Text(stringResource(R.string.sign_out)) },
-            text = { Text(stringResource(R.string.sign_out_confirm)) },
+            text = {
+                Text(
+                    if (pending > 0) pluralStringResource(R.plurals.sign_out_pending, pending, pending)
+                    else stringResource(R.string.sign_out_confirm),
+                )
+            },
             confirmButton = { TextButton(onClick = { confirmSignOut = false; onSignOut() }) { Text(stringResource(R.string.sign_out), color = CxDanger) } },
             dismissButton = { TextButton(onClick = { confirmSignOut = false }) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
+
+    if (choosingWarehouse) {
+        AlertDialog(
+            onDismissRequest = { choosingWarehouse = false },
+            title = { Text(stringResource(R.string.settings_warehouse)) },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    Text(stringResource(R.string.settings_warehouse_hint), style = MaterialTheme.typography.bodyMedium, color = CxMuted)
+                    Spacer(Modifier.height(8.dp))
+                    val options = listOf<Pair<Int?, String>>(null to stringResource(R.string.settings_warehouse_last)) +
+                        warehouses.orEmpty().map { it.id to it.name }
+                    for ((id, name) in options) {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .selectable(selected = prefs.fixedWarehouseId == id, role = Role.RadioButton) {
+                                    scope.launch { work.setFixedWarehouse(session.baseUrl, id) }
+                                    choosingWarehouse = false
+                                }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = prefs.fixedWarehouseId == id, onClick = null)
+                            Spacer(Modifier.width(12.dp))
+                            Text(name, style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                    if (warehouses == null) {
+                        Text(stringResource(R.string.settings_warehouse_offline), style = MaterialTheme.typography.bodyMedium, color = CxDanger)
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { choosingWarehouse = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 }

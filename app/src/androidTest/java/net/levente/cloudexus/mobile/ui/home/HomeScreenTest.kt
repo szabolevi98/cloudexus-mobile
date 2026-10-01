@@ -43,8 +43,24 @@ class HomeScreenTest {
 
     private var settingsOpened = 0
 
-    private fun show(session: Session) {
-        rule.setContent { CloudexusTheme { HomeScreen(session, onBooking = {}, onLookup = {}, onSettings = { settingsOpened++ }) } }
+    private fun show(session: Session, pending: Int = 0) {
+        rule.setContent {
+            CloudexusTheme {
+                HomeScreen(
+                    session,
+                    pending = pending,
+                    pendingFailed = false,
+                    onBooking = {},
+                    onStocktaking = {},
+                    onPicking = {},
+                    onReceiving = {},
+                    onToday = {},
+                    onOutbox = {},
+                    onLookup = {},
+                    onSettings = { settingsOpened++ },
+                )
+            }
+        }
     }
 
     private fun save(name: String) {
@@ -80,6 +96,29 @@ class HomeScreenTest {
         rule.onNodeWithContentDescription(context.getString(R.string.account_and_settings)).assertHasClickAction().performClick()
         rule.onNodeWithContentDescription(context.getString(R.string.settings)).performClick()
         assertEquals(2, settingsOpened)
+    }
+
+    @Test
+    fun stocktakingNeedsItsOwnPermission() {
+        show(session("Raktáros", listOf("stock.view", "stock.move")))
+
+        rule.onNodeWithText(context.getString(R.string.mode_picking)).assertExists()
+        rule.onNodeWithText(context.getString(R.string.mode_stocktaking)).assertDoesNotExist()
+    }
+
+    @Test
+    fun aStocktakerWithoutStockMovesStillCounts() {
+        show(session("Leltározó", listOf("stock.view", "stocktaking.manage")))
+
+        rule.onNodeWithText(context.getString(R.string.mode_stocktaking)).assertExists()
+        rule.onNodeWithText(context.getString(R.string.mode_picking)).assertDoesNotExist()
+    }
+
+    @Test
+    fun bookingsWaitingToBeSentAreShownFirst() {
+        show(session("Raktáros", listOf("stock.move")), pending = 3)
+
+        rule.onNodeWithText(context.resources.getQuantityString(R.plurals.home_pending, 3, 3)).assertIsDisplayed()
     }
 
     @Test

@@ -20,7 +20,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.ManageSearch
+import androidx.compose.material.icons.rounded.Checklist
+import androidx.compose.material.icons.rounded.CloudUpload
+import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.LocalShipping
 import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.ShoppingCartCheckout
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -39,6 +46,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import net.levente.cloudexus.mobile.R
+import net.levente.cloudexus.mobile.data.api.User
 import net.levente.cloudexus.mobile.data.session.Session
 import net.levente.cloudexus.mobile.ui.booking.BookingMode
 import net.levente.cloudexus.mobile.ui.booking.style
@@ -46,13 +54,30 @@ import net.levente.cloudexus.mobile.ui.components.CxCard
 import net.levente.cloudexus.mobile.ui.components.CxHeader
 import net.levente.cloudexus.mobile.ui.components.IconTile
 import net.levente.cloudexus.mobile.ui.components.SectionLabel
+import net.levente.cloudexus.mobile.ui.theme.CxDanger
 import net.levente.cloudexus.mobile.ui.theme.CxMuted
 import net.levente.cloudexus.mobile.ui.theme.CxNavyTo
+import net.levente.cloudexus.mobile.ui.theme.CxOrange
 import net.levente.cloudexus.mobile.ui.theme.CxPrimary
+import net.levente.cloudexus.mobile.ui.theme.CxSuccess
+import net.levente.cloudexus.mobile.ui.theme.CxViolet
+import net.levente.cloudexus.mobile.ui.theme.CxWarning
 import java.net.URI
 
 @Composable
-fun HomeScreen(session: Session, onBooking: (BookingMode) -> Unit, onLookup: () -> Unit, onSettings: () -> Unit) {
+fun HomeScreen(
+    session: Session,
+    pending: Int,
+    pendingFailed: Boolean,
+    onBooking: (BookingMode) -> Unit,
+    onStocktaking: () -> Unit,
+    onPicking: () -> Unit,
+    onReceiving: () -> Unit,
+    onToday: () -> Unit,
+    onOutbox: () -> Unit,
+    onLookup: () -> Unit,
+    onSettings: () -> Unit,
+) {
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         CxHeader(
             // The whole name: in Hungarian order the first word is the family name.
@@ -80,6 +105,23 @@ fun HomeScreen(session: Session, onBooking: (BookingMode) -> Unit, onLookup: () 
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            if (pending > 0) {
+                CxCard(onClick = onOutbox, modifier = Modifier.fillMaxWidth(), border = (if (pendingFailed) CxDanger else CxWarning).copy(alpha = 0.6f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconTile(if (pendingFailed) Icons.Rounded.ErrorOutline else Icons.Rounded.CloudUpload, if (pendingFailed) CxDanger else CxWarning, size = 40.dp, soft = true)
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(pluralStringResource(R.plurals.home_pending, pending, pending), style = MaterialTheme.typography.titleSmall)
+                            Text(
+                                stringResource(if (pendingFailed) R.string.home_pending_failed else R.string.home_pending_text),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = CxMuted,
+                            )
+                        }
+                        Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null, tint = CxMuted)
+                    }
+                }
+            }
             SectionLabel(stringResource(R.string.home_section_movements), Modifier.padding(start = 4.dp, top = 4.dp))
             if (session.user.canMoveStock) {
                 for (mode in BookingMode.entries) {
@@ -89,6 +131,17 @@ fun HomeScreen(session: Session, onBooking: (BookingMode) -> Unit, onLookup: () 
             } else {
                 NoBookingNotice(session.user.roleName)
             }
+            val countStock = session.user.can(User.STOCKTAKING)
+            if (session.user.canMoveStock || countStock) {
+                SectionLabel(stringResource(R.string.home_section_work), Modifier.padding(start = 4.dp, top = 8.dp))
+                if (session.user.canMoveStock) {
+                    ActionTile(stringResource(R.string.mode_picking), stringResource(R.string.mode_picking_subtitle), Icons.Rounded.ShoppingCartCheckout, CxOrange, onPicking)
+                    ActionTile(stringResource(R.string.mode_receiving), stringResource(R.string.mode_receiving_subtitle), Icons.Rounded.LocalShipping, CxSuccess, onReceiving)
+                }
+                if (countStock) {
+                    ActionTile(stringResource(R.string.mode_stocktaking), stringResource(R.string.mode_stocktaking_subtitle), Icons.Rounded.Checklist, CxViolet, onStocktaking)
+                }
+            }
             SectionLabel(stringResource(R.string.home_section_info), Modifier.padding(start = 4.dp, top = 8.dp))
             ActionTile(
                 stringResource(R.string.mode_lookup),
@@ -97,6 +150,7 @@ fun HomeScreen(session: Session, onBooking: (BookingMode) -> Unit, onLookup: () 
                 CxNavyTo,
                 onLookup,
             )
+            ActionTile(stringResource(R.string.today_title), stringResource(R.string.today_subtitle), Icons.Rounded.History, CxPrimary, onToday)
         }
     }
 }

@@ -58,6 +58,27 @@ import net.levente.cloudexus.mobile.ui.theme.CxDanger
 import net.levente.cloudexus.mobile.ui.theme.CxMuted
 import net.levente.cloudexus.mobile.ui.theme.CxNavyTo
 import net.levente.cloudexus.mobile.ui.toUiText
+import net.levente.cloudexus.mobile.ui.components.RemoteImage
+import net.levente.cloudexus.mobile.ui.components.ScanSignals
+import net.levente.cloudexus.mobile.ui.components.Signal
+import net.levente.cloudexus.mobile.data.work.WorkStore
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.material.icons.rounded.WarningAmber
+import okhttp3.OkHttpClient
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.text.NumberFormat
+import java.util.Locale
 
 data class LookupUiState(
     val lookingUp: Boolean = false,
@@ -66,9 +87,16 @@ data class LookupUiState(
     val error: UiText? = null,
 )
 
-class LookupViewModel(private val api: ApiClient, private val sessions: SessionManager) : ViewModel() {
+class LookupViewModel(private val api: ApiClient, private val sessions: SessionManager, work: WorkStore) : ViewModel() {
     private val _state = MutableStateFlow(LookupUiState())
     val state = _state.asStateFlow()
+
+    private val _signals = Channel<Signal>(Channel.BUFFERED)
+    val signals = _signals.receiveAsFlow()
+
+    val sound: StateFlow<Boolean> = sessions.current?.baseUrl
+        ?.let { server -> work.prefs(server).map { it.sound }.stateIn(viewModelScope, SharingStarted.Eagerly, true) }
+        ?: MutableStateFlow(true)
 
     fun onScan(code: String) {
         val connection = sessions.current?.connection() ?: return
@@ -78,9 +106,11 @@ class LookupViewModel(private val api: ApiClient, private val sessions: SessionM
             try {
                 val product = api.lookup(connection, code)
                 _state.update { LookupUiState(product = product, notFound = if (product == null) code else null) }
+                _signals.trySend(if (product == null) Signal.ERROR else Signal.OK)
             } catch (e: ApiException) {
                 if (e is ApiException.Unauthorized) sessions.expire()
                 _state.update { it.copy(lookingUp = false, error = e.toUiText()) }
+                _signals.trySend(Signal.ERROR)
             }
         }
     }
@@ -88,8 +118,10 @@ class LookupViewModel(private val api: ApiClient, private val sessions: SessionM
 
 /** Scan anything to see where it is and how much there is, without booking. */
 @Composable
-fun LookupScreen(viewModel: LookupViewModel, scanner: ScannerConfig, onBack: () -> Unit) {
+fun LookupScreen(viewModel: LookupViewModel, scanner: ScannerConfig, http: OkHttpClient, onBack: () -> Unit) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val sound by viewModel.sound.collectAsStateWithLifecycle()
+    ScanSignals(viewModel.signals, sound)
     var camera by rememberSaveable { mutableStateOf(false) }
     ScannerBroadcastEffect(scanner) { code -> if (!camera) viewModel.onScan(code) }
 
@@ -109,7 +141,7 @@ fun LookupScreen(viewModel: LookupViewModel, scanner: ScannerConfig, onBack: () 
                     Problem(stringResource(R.string.code_not_found_title), stringResource(R.string.code_not_found_text, state.notFound!!))
                 }
                 product != null -> {
-                    item { ProductCard(product) }
+                    item { ProductCard(product, http) }
                     val byWarehouse = product.stock.groupBy { it.warehouseId }
                     if (byWarehouse.isEmpty()) {
                         item { Text(stringResource(R.string.lookup_no_stock), color = CxMuted, modifier = Modifier.padding(4.dp)) }
@@ -154,10 +186,17 @@ fun LookupScreen(viewModel: LookupViewModel, scanner: ScannerConfig, onBack: () 
 }
 
 @Composable
-private fun ProductCard(product: Product) {
+private fun ProductCard(product: Product, http: OkHttpClient) {
     CxCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconTile(Icons.Rounded.Inventory2, CxNavyTo)
+            val image = product.imageUrl
+            if (image != null) {
+                Box(Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
+                    RemoteImage(image, http, contentDescription = null, modifier = Modifier.fillMaxSize())
+                }
+            } else {
+                IconTile(Icons.Rounded.Inventory2, CxNavyTo)
+            }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(product.name, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -165,10 +204,62 @@ private fun ProductCard(product: Product) {
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(stringResource(R.string.stock_total), style = MaterialTheme.typography.labelSmall, color = CxMuted)
-                Text("${formatQuantity(product.stockTotal)} ${product.unit.orEmpty()}".trim(), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "${formatQuantity(product.stockTotal)} ${product.unit.orEmpty()}".trim(),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (product.belowMinStock == true) CxDanger else MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+        // The active price is the sale price when there is one, as on the web.
+        val list = product.price?.toBigDecimalOrNull()
+        val sale = product.salePrice?.toBigDecimalOrNull()?.takeIf { it.signum() > 0 }
+        val net = sale ?: list
+        if (net != null) {
+            val vat = product.vatRate?.toBigDecimalOrNull()
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(vertical = 10.dp))
+            Row(verticalAlignment = Alignment.Bottom) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.lookup_net_price), style = MaterialTheme.typography.labelSmall, color = CxMuted)
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(formatMoney(net), style = MaterialTheme.typography.titleLarge, color = if (sale != null) CxDanger else MaterialTheme.colorScheme.onSurface)
+                        if (sale != null && list != null && list.compareTo(sale) != 0) {
+                            Spacer(Modifier.width(8.dp))
+                            Text(formatMoney(list), style = MaterialTheme.typography.bodyMedium.copy(textDecoration = TextDecoration.LineThrough), color = CxMuted)
+                        }
+                    }
+                }
+                if (vat != null) {
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(stringResource(R.string.lookup_gross_price, formatQuantity(vat)), style = MaterialTheme.typography.labelSmall, color = CxMuted)
+                        val gross = net.multiply(BigDecimal.ONE + vat.movePointLeft(2))
+                        Text(formatMoney(gross), style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+            }
+        }
+        if (product.belowMinStock == true) {
+            Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.WarningAmber, contentDescription = null, tint = CxDanger, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    product.minStock?.toBigDecimalOrNull()?.let { stringResource(R.string.lookup_below_min_of, formatQuantity(it), product.unit.orEmpty()).trim() }
+                        ?: stringResource(R.string.lookup_below_min),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = CxDanger,
+                )
             }
         }
     }
+}
+
+/** A price in the shop's currency, which the API does not name: grouped, with the cents only when there are any. */
+private fun formatMoney(value: BigDecimal): String {
+    val rounded = value.setScale(2, RoundingMode.HALF_UP)
+    val format = NumberFormat.getNumberInstance(Locale.getDefault())
+    format.minimumFractionDigits = if (rounded.stripTrailingZeros().scale() > 0) 2 else 0
+    format.maximumFractionDigits = 2
+    return format.format(rounded)
 }
 
 @Composable
