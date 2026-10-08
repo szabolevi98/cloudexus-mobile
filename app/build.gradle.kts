@@ -22,8 +22,8 @@ android {
         // Sok raktári PDA még Android 8-at futtat.
         minSdk = 26
         targetSdk = 37
-        versionCode = 7
-        versionName = "1.1.1"
+        versionCode = 8
+        versionName = "1.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

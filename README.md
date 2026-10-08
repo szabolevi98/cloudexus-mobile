@@ -176,6 +176,12 @@ translation.
    `cloudexus.example.com`), your username and your password — and, with
    two-step sign-in on, the code from your authenticator app.
 
+From 1.2.0 the APK is signed with a new key, since the old one was lost.
+Android installs an update only with the same key, so going from 1.1.1 or
+earlier to 1.2.0 takes uninstalling the old version first, and signing in
+again. Send any bookings still waiting in the queue before uninstalling, or
+they are lost with it. Later updates install over 1.2.0 as before.
+
 It needs **Android 8.0 (API 26)** or later, and a Cloudexus server with the
 mobile endpoints (`/api/auth/*`, `/api/products/lookup`,
 `/api/stock/in|out|transfer`) — any version from 22 September 2026 on, with
